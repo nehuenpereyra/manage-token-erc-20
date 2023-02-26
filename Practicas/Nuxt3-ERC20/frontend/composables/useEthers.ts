@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
+import autoBind from 'auto-bind'
 import { StateDapp, Token } from '../types';
-
+import { reactive } from 'vue'
 /* Importamos TokenArtifact y contractAddress aquí, 
  ya que los usaremos con ethers.
  */
@@ -23,12 +24,13 @@ export class UseEthers {
   private pollDataInterval: ReturnType<typeof setInterval> | undefined;
 
   constructor() {
-    this.state = this.initialState();
+    autoBind(this)
+    this.state = reactive(this.initialState());
   }
 
   // Establece el estado inicial.
   setInitialState() {
-    this.state = this.initialState();
+    this.state = reactive(this.initialState());
   }
 
   /* Las billeteras de Ethereum inyectan en windows un object Ethereum.
@@ -103,7 +105,7 @@ export class UseEthers {
     };
   }
 
-  private initialize(userAddress: string) {
+  private async initialize(userAddress: string) {
     // Este método inicializa el DAPP.
 
     //Primero almacenamos la dirección del usuario en el estado del componente.
@@ -115,8 +117,8 @@ export class UseEthers {
     proyecto.
     */
 
-    this.initializeEthers();
-    this.getTokenData();
+    await this.initializeEthers();
+    await this.getTokenData();
     this.startPollingData();
   }
 
@@ -126,6 +128,7 @@ export class UseEthers {
     if (window.ethereum)
       provider = new ethers.providers.Web3Provider(window.ethereum);
 
+    console.log('provider', await provider?.getCode(contractAddress.Token))
     /* Luego, inicializamos el contrato usando ese proveedor y el token artefacto. 
     Puedes hacer lo mismo con tus contratos.
     */
@@ -138,7 +141,7 @@ export class UseEthers {
   }
 
   private startPollingData() {
-    this.pollDataInterval = setInterval(() => this.updateBalance(), 1000);
+    this.pollDataInterval = setInterval(() => this.updateBalance(), 10000);
 
     // Lo ejecutamos una vez inmediatamente para que no tengamos que esperarlo
     this.updateBalance();
@@ -153,19 +156,23 @@ export class UseEthers {
     en el estado del componente.
 */
   private async getTokenData() {
-    if (this.token && this.token.name && this.token.symbol) {
-      const name = await this.token.name();
-      const symbol = await this.token.symbol();
+    if (this.token && this.token.name && this.token.symbol) 
+      try {
+        const name = await this.token.name();
+        const symbol = await this.token.symbol();
 
-      this.state.tokenData = { name, symbol };
-    }
+        this.state.tokenData = { name, symbol };
+      } catch (error) {
+        console.log('Error', error)
+      }
   }
 
   private async updateBalance() {
     if (this.token && this.token.balanceOf && this.state.selectedAddress)
-      this.state.balance = await this.token.balanceOf(
+      this.state.balance = (await this.token.balanceOf(
         this.state.selectedAddress
-      );
+      )).toNumber() / Math.pow(10, 18);
+    console.log('Update', this.state.selectedAddress, this.state.balance)
   }
 
   /* Este método envía una transacción Ethereum para transferir tokens.
@@ -226,7 +233,7 @@ export class UseEthers {
   }
 
   // Este método solo borra parte del estado.
-  private dismissTransactionError() {
+  public dismissTransactionError() {
     this.state.transactionError = undefined;
   }
 

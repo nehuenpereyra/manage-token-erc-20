@@ -24,6 +24,7 @@
   "dependencies": {
     "@mdi/font": "^7.1.96",
     "@pinia/nuxt": "^0.4.6",
+    "auto-bind": "^5.0.1",
     "ethers": "^5.4.7",
     "pinia": "^2.0.30",
     "sass": "^1.58.0",

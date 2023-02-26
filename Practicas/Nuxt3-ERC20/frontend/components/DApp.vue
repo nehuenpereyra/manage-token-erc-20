@@ -1,29 +1,49 @@
 <template>
-  <div class="d-flex align-center flex-column">
-    <v-icon>mdi-home</v-icon>
-    <v-card width="400">
-      <h1>Base</h1>
-      <form>
-        <v-select
-          v-model="locale"
-          :items="['en', 'es']"
-        />
-        <p>{{ t('welcome') }}</p>
-      </form>
-      <button @click="increment">
-        {{ t('counter', count) }}
-      </button>
-      {{ filtersList }}
-    </v-card>
+  <div>
+    <AllComponents v-if="false" />
+    <div
+      v-else
+      class="d-flex align-center flex-column"
+    >
+      <v-card
+        class="mx-auto"
+        max-width="800"
+      >
+        <v-card-item>
+          <NoWalletDetected v-if="ethers.disabledEthereum()" />
+          <template v-if="!ethers.disabledEthereum()">
+            <ConnectWallet 
+              v-if="ethers.state.selectedAddress===undefined"
+              :network-error="ethers.state.networkError|| ''"
+              :dismiss="ethers.dismissNetworkError"
+              :connect-wallet="ethers.connectWallet"
+            />
+            <DDetail
+              v-if="ethers.state.selectedAddress!==undefined"
+              :token-data="ethers.state.tokenData || {
+                name: '',
+                symbol: ''
+              }"
+              :selected-address="ethers.state.selectedAddress || ''"
+              :balance="ethers.state.balance || 0"
+              :tx-being-sent="ethers.state.txBeingSent || ''"
+              :transaction-error="ethers.state.transactionError || { }"
+              :dismiss-transaction-error="ethers.dismissTransactionError"
+              :transfer-tokens="ethers.transferTokens"
+            />
+            <!-- <DLoading v-if="ethers.isLoading()" /> -->
+          </template>
+        </v-card-item>
+      </v-card>
+    </div>
   </div>
 </template>
     
 <script setup lang="ts">
-import { useFiltersStore } from '~~/store/filters'
-const filtersStore = useFiltersStore()
-const filtersList = filtersStore.filtersList
-const { locale, t } = useI18n()
+import { onUnmounted } from 'vue'
+import {UseEthers} from '@/composables/useEthers'
+let ethers = new UseEthers()
 
-const {count, increment} = useCounter()
-  
+
+onUnmounted(() => ethers.stopPollingData())
 </script>
