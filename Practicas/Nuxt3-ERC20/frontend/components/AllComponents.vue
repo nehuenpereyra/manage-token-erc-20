@@ -29,6 +29,7 @@
         <TransferForm
           :token-symbol="'AS'"
           :transfer-tokens="transferTokens"
+          :total-amount="200"
         />
         <DDetail 
           :token-data="{

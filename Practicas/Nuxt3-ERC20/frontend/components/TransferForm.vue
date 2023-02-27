@@ -7,6 +7,7 @@
       <v-text-field
         v-model="amount"
         :rules="amountRules"
+        type="number"
         :label="`Amount of ${tokenSymbol}`"
         required
       />
@@ -39,16 +40,24 @@ const props = defineProps({
   transferTokens: {
     type: Function,
     required: true
+  },
+  totalAmount: {
+    type: Number,
+    required: true
   }
 });
 
-const amount = ref(1)
+const amount = ref('')
 const recipientAddress = ref('')
 const valid = ref(false)
 
 const amountRules = [
   (value: any) => {
-    if (value > 0) return true
+    if (value > 0) {
+      if(value > props.totalAmount)
+        return 'Amount exceeds balance.'
+      return true
+    }
     return 'You have to send an amount.'
   }
 ]
@@ -61,7 +70,7 @@ const recipientAddressRules = [
 
 function send(){
   if(valid.value)
-    props.transferTokens(recipientAddress, amount)
+    props.transferTokens(recipientAddress.value, amount.value)
 }
 
 </script>

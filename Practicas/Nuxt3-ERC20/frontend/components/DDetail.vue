@@ -12,8 +12,8 @@
       :tx-hash="txBeingSent"
     />
     <TransactionErrorMessage
-      v-if="transactionError.data && transactionError.data.message!==''"
-      :message="transactionError.data.message"
+      v-if="transactionError!==''"
+      :message="transactionError"
       :dismiss="dismissTransactionError"
     />
     <NoTokensMessage
@@ -24,6 +24,7 @@
       v-if="balance > 0"
       :token-symbol="tokenData.symbol"
       :transfer-tokens="transferTokens"
+      :total-amount="balance"
     />
   </v-container>
 </template>
@@ -48,7 +49,7 @@ defineProps({
     required: true
   },
   transactionError: {
-    type: Object,
+    type: String,
     required: true
   },
   dismissTransactionError: {

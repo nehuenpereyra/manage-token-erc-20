@@ -12,4 +12,10 @@ contract AsianToken is ERC20 {
     constructor(uint256 initialSupply) ERC20("AsianToken", "AT") {
         _mint(msg.sender, initialSupply);
     }
+
+    // Receive function
+    receive() external payable {}
+
+    // Fallback function
+    fallback() external payable {}
 }

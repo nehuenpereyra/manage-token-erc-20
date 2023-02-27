@@ -39,8 +39,8 @@ export interface StateDapp  {
 export interface Token extends BaseContract{
     name?: () => string,
     symbol?: () => string,
-    balanceOf?: (addr: string) => { toNumber: () => number},
-    transfer?: (to: string, amount: number) => {
+    balanceOf?: (addr: string) => { toNumber: () => string},
+    transfer?: (to: string, amount: string) => {
         hash: string,
         wait: () => {status: number}
     }

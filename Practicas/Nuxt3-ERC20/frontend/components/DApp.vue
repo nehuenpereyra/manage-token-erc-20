@@ -27,7 +27,7 @@
               :selected-address="ethers.state.selectedAddress || ''"
               :balance="ethers.state.balance || 0"
               :tx-being-sent="ethers.state.txBeingSent || ''"
-              :transaction-error="ethers.state.transactionError || { }"
+              :transaction-error="ethers.getRpcErrorMessage(ethers.state.transactionError) || ''"
               :dismiss-transaction-error="ethers.dismissTransactionError"
               :transfer-tokens="ethers.transferTokens"
             />

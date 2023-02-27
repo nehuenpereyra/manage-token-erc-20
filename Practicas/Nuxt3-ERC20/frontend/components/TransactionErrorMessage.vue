@@ -7,7 +7,7 @@
         prominent
         class="my-4"
       >
-        Error sending transaction: {{ message.substring(0, 100) }}{{ message.length >= 100 ? '...': '.' }}
+        Error sending transaction: {{ message.substring(0, 400) }}{{ message.length >= 400 ? '...': '.' }}
       </v-alert>
     </v-row>
   

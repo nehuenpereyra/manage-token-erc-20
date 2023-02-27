@@ -1,4 +1,5 @@
-import { ethers } from 'ethers';
+import { ethers, utils } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
 import autoBind from 'auto-bind'
 import { StateDapp, Token } from '../types';
 import { reactive } from 'vue'
@@ -19,6 +20,7 @@ const HARDHAT_NETWORK_ID = '1337';
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
 
 export class UseEthers {
+  private decimals = 18;
   public state: StateDapp;
   private token: Token | undefined;
   private pollDataInterval: ReturnType<typeof setInterval> | undefined;
@@ -128,7 +130,8 @@ export class UseEthers {
     if (window.ethereum)
       provider = new ethers.providers.Web3Provider(window.ethereum);
 
-    console.log('provider', await provider?.getCode(contractAddress.Token))
+    //console.log('provider', await provider?.getCode(contractAddress.Token))
+    
     /* Luego, inicializamos el contrato usando ese proveedor y el token artefacto. 
     Puedes hacer lo mismo con tus contratos.
     */
@@ -141,7 +144,7 @@ export class UseEthers {
   }
 
   private startPollingData() {
-    this.pollDataInterval = setInterval(() => this.updateBalance(), 10000);
+    this.pollDataInterval = setInterval(() => this.updateBalance(), 1000);
 
     // Lo ejecutamos una vez inmediatamente para que no tengamos que esperarlo
     this.updateBalance();
@@ -168,11 +171,12 @@ export class UseEthers {
   }
 
   private async updateBalance() {
-    if (this.token && this.token.balanceOf && this.state.selectedAddress)
-      this.state.balance = (await this.token.balanceOf(
+    if (this.token && this.token.balanceOf && this.state.selectedAddress){
+      const balance = await this.token.balanceOf(
         this.state.selectedAddress
-      )).toNumber() / Math.pow(10, 18);
-    console.log('Update', this.state.selectedAddress, this.state.balance)
+      )
+      this.state.balance = parseFloat(utils.formatUnits(BigNumber.from(balance), this.decimals))
+    }
   }
 
   /* Este método envía una transacción Ethereum para transferir tokens.
@@ -201,9 +205,11 @@ export class UseEthers {
       // Enviamos la transacción y guardamos su hash en el estado de DAPP. Este
       // La forma en que podemos indicar que estamos esperando que se extraiga.
       if (this.token && this.token.transfer) {
-        const tx = await this.token.transfer(to, amount);
+        const amountb = BigNumber.from(amount);
+        const total = amountb.mul(BigNumber.from(`${Math.pow(10, this.decimals)}`)).toString()
+        const tx = await this.token.transfer(to, total);
         this.state.txBeingSent = tx.hash;
-
+        
         // Usamos .wait() para esperar a que se extraiga la transacción. Este método
         // Devuelve el recibo de la transacción.
         const receipt = await tx.wait();
@@ -220,7 +226,7 @@ export class UseEthers {
     } catch (error: any) {
       // Verificamos el código de error para ver si se produjo este error porque el
       // El usuario rechazó un TX. Si ese es el caso, no hacemos nada.
-      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return;
+      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
 
       // Otros errores se registran y almacenan en el estado de DAPP. Esto se usa para
       // Muéstrales al usuario y para la depuración.
@@ -244,8 +250,11 @@ export class UseEthers {
 
   // Este es un método de utilidad que convierte un error RPC en un mensaje legible por humanos.
   getRpcErrorMessage(error: any) {
-    if (error.data) return error.data.message;
-    return error.message;
+    if(error){
+      if (error.data) return error.data.message;
+      return error.message;
+    }
+    return ''
   }
 
   // Este método verifica si la red seleccionada de metamask es localhost: 8545.
