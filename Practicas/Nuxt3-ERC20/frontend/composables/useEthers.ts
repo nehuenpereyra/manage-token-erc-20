@@ -14,7 +14,7 @@ import contractAddress from '../contracts/contract-address.json';
  https://docs.metamask.io/guide/ethereum-provider.html#properties
  para usar al implementar otras redes.
 */
-const HARDHAT_NETWORK_ID = '1337';
+const HARDHAT_NETWORK_ID = '1337'; // ganache 5777
 
 // Este es un código de error que indica que el usuario canceló una transacción.
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;

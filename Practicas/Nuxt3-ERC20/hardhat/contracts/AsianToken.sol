@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 // Version
-pragma solidity ^0.8.4; 
+pragma solidity ^0.8.17; 
 
 // Importar un Smart Contract desde Openzeppelin
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
