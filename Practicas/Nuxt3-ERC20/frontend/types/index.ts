@@ -1,9 +1,10 @@
 import { ExternalProvider } from '@ethersproject/providers';
-import { BaseContract } from 'ethers';
+import { BaseContract, BigNumber } from 'ethers';
 
 interface CustomExternalProvider extends ExternalProvider{ 
     on: (e: string, l:(p:Array<string|undefined>) => void) => void,
-    networkVersion: string
+    networkVersion: string,
+    request?: (request: { method: string, params?: any }) => Promise<any>
 }
 
 declare global {
@@ -39,8 +40,8 @@ export interface StateDapp  {
 export interface Token extends BaseContract{
     name?: () => string,
     symbol?: () => string,
-    balanceOf?: (addr: string) => { toNumber: () => string},
-    transfer?: (to: string, amount: string) => {
+    balanceOf?: (addr: string) => string,
+    transfer?: (to: string, amount: BigNumber) => {
         hash: string,
         wait: () => {status: number}
     }

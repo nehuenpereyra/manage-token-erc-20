@@ -1,5 +1,4 @@
-import { ethers, utils } from 'ethers';
-import { BigNumber } from '@ethersproject/bignumber';
+import { ethers } from 'ethers';
 import autoBind from 'auto-bind'
 import { StateDapp, Token } from '../types';
 import { reactive } from 'vue'
@@ -14,10 +13,14 @@ import contractAddress from '../contracts/contract-address.json';
  https://docs.metamask.io/guide/ethereum-provider.html#properties
  para usar al implementar otras redes.
 */
-const HARDHAT_NETWORK_ID = '1337'; // ganache 5777
+const HARDHAT_NETWORK_ID = '31337'; // ganache 5777 | hardhat 1337
 
 // Este es un código de error que indica que el usuario canceló una transacción.
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
+
+// Funciones de utilidad
+const toWei = (num: number) => ethers.utils.parseEther(num.toString())
+const fromWei = (num: string) => ethers.utils.formatEther(num)
 
 export class UseEthers {
   private decimals = 18;
@@ -121,7 +124,9 @@ export class UseEthers {
 
     await this.initializeEthers();
     await this.getTokenData();
+    await this.updateBalance();
     this.startPollingData();
+    this.setLogo();
   }
 
   private async initializeEthers() {
@@ -145,9 +150,6 @@ export class UseEthers {
 
   private startPollingData() {
     this.pollDataInterval = setInterval(() => this.updateBalance(), 1000);
-
-    // Lo ejecutamos una vez inmediatamente para que no tengamos que esperarlo
-    this.updateBalance();
   }
 
   stopPollingData() {
@@ -175,7 +177,7 @@ export class UseEthers {
       const balance = await this.token.balanceOf(
         this.state.selectedAddress
       )
-      this.state.balance = parseFloat(utils.formatUnits(BigNumber.from(balance), this.decimals))
+      this.state.balance = parseFloat(fromWei(balance))
     }
   }
 
@@ -205,8 +207,7 @@ export class UseEthers {
       // Enviamos la transacción y guardamos su hash en el estado de DAPP. Este
       // La forma en que podemos indicar que estamos esperando que se extraiga.
       if (this.token && this.token.transfer) {
-        const amountb = BigNumber.from(amount);
-        const total = amountb.mul(BigNumber.from(`${Math.pow(10, this.decimals)}`)).toString()
+        const total = toWei(amount)
         const tx = await this.token.transfer(to, total);
         this.state.txBeingSent = tx.hash;
         
@@ -265,5 +266,29 @@ export class UseEthers {
     this.state.networkError = 'Please connect Metamask to Localhost:8545';
 
     return false;
+  }
+
+  private async setLogo (){
+    if(this.state.balance === 0){
+      const ethereum = window.ethereum
+      try {
+        if(ethereum && ethereum.request)
+          await ethereum.request({
+            method: 'wallet_watchAsset',
+            params: {
+              type: 'ERC20',
+              chainId: '1337',
+              options: {
+                address: contractAddress.Token,
+                symbol: this.state.tokenData?.symbol,
+                decimals: this.decimals,
+                image: 'https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.png?v=024' 
+              }
+            }
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
 }

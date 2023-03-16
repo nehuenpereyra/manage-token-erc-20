@@ -1,5 +1,9 @@
 const path = require("path");
 
+// Funciones de utilidad
+const toWei = (num) => ethers.utils.parseEther(num.toString()).toString()
+const fromWei = (num) => ethers.utils.formatEther(num)
+
 async function main() {
   /* Hardhat siempre ejecuta la tarea de compilación 
   al ejecutar scripts con su interfaz de línea de comando.
@@ -23,14 +27,14 @@ async function main() {
 
   console.log("Deploying contracts with the account:", deployer.address);
 
-  console.log("Account balance:", (await deployer.getBalance()).toString());
+  console.log("Account balance:", fromWei(await deployer.getBalance()));
 
   // Supply Inicial
-  let initialSupply = '10000000000000000000000'; // 10000 * 1e18
+  let initialSupply = '10000';
 
   // Obtenemos el contrato para implementar.
-  const Token = await ethers.getContractFactory("AsianToken");
-  const token = await Token.deploy(initialSupply);
+  const Token = await ethers.getContractFactory("Token");
+  const token = await Token.deploy('AsianToken', 'AT', initialSupply);
 
   console.log("Token address:", token.address);
 
@@ -55,7 +59,7 @@ function saveFrontendFiles(token) {
 
   console.log('File contract-address.json created in frontend')
 
-  const TokenArtifact = artifacts.readArtifactSync("AsianToken");
+  const TokenArtifact = artifacts.readArtifactSync("Token");
 
   fs.writeFileSync(
     path.join(contractsDir, "AsianToken.json"),
