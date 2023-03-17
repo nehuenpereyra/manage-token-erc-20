@@ -62,11 +62,11 @@ function saveFrontendFiles(token) {
   const TokenArtifact = artifacts.readArtifactSync("Token");
 
   fs.writeFileSync(
-    path.join(contractsDir, "AsianToken.json"),
+    path.join(contractsDir, "Token.json"),
     JSON.stringify(TokenArtifact, null, 2)
   );
 
-  console.log('File AsianToken.json created in frontend')
+  console.log('File Token.json created in frontend')
 }
 
 main()

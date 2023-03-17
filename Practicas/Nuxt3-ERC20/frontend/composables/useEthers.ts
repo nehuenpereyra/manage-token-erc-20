@@ -5,7 +5,7 @@ import { reactive } from 'vue'
 /* Importamos TokenArtifact y contractAddress aquí, 
  ya que los usaremos con ethers.
  */
-import TokenArtifact from '../contracts/AsianToken.json';
+import TokenArtifact from '../contracts/Token.json';
 import contractAddress from '../contracts/contract-address.json';
 
 /* Esta es la identificación de la red Hardhat que establecemos en
