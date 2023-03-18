@@ -4,7 +4,7 @@
 El siguiente comando permite compilar los contratos:
 
 ```bash
-npx hardhat compile
+npx hardhat compile --force
 ```
 
 ## Despliegue de prueba

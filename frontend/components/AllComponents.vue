@@ -33,8 +33,8 @@
         />
         <DDetail 
           :token-data="{
-            name:'Asian Token',
-            symbol:'AT'
+            name:'Token',
+            symbol:'TK'
           }"
           :selected-address="'0x7777777777'"
           :balance="0"
