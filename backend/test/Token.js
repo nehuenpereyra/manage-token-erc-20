@@ -59,14 +59,11 @@ describe("Token contract", () => {
       const addr1InitialTokensBal = await token.balanceOf(addr1.address);
 
       const totalPriceInWei = toWei(amount * PRICE);
-      await token.connect(addr1).buyTokens(amount, { value: totalPriceInWei });
 
-      const gas = await ethers.provider.estimateGas({
-        from: token.address,
-        to: addr1.address,
-        value: totalPriceInWei,
-      });
-
+      const tx = await token.connect(addr1).buyTokens(amount, { value: totalPriceInWei });
+      const gas = tx.gasPrice
+      await tx.wait();
+      
       const scFinalEthBal = await ethers.provider.getBalance(token.address);
       const addr1FinalEthBal = await ethers.provider.getBalance(addr1.address);
 
@@ -94,13 +91,10 @@ describe("Token contract", () => {
       const addr1InitialTokensBal = await token.balanceOf(addr1.address);
 
       const totalPriceInWei = toWei(numTokens * PRICE);
-      await token.connect(addr1).repayTokens(numTokens);
-
-      const gas = await ethers.provider.estimateGas({
-        from: token.address,
-        to: addr1.address,
-        value: totalPriceInWei,
-      });
+      
+      const tx = await token.connect(addr1).repayTokens(numTokens);
+      const gas = tx.gasPrice
+      await tx.wait();
 
       const scFinalEthBal = await ethers.provider.getBalance(token.address);
       const addr1FinalEthBal = await ethers.provider.getBalance(addr1.address);

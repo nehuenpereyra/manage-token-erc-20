@@ -39,11 +39,13 @@
           :selected-address="'0x7777777777'"
           :balance="0"
           :tx-being-sent="'0x6666'"
-          :transaction-error="'Error loco'"
+          :transaction-error="'Error...'"
           :dismiss-transaction-error="()=>{}"
           :transfer-tokens="()=>{}"
         />
       </v-card-item>
+      <InfoUser />
+      <TabBarMenu />
     </v-card>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <div class="pa-4 text-center">
+  <div class="pa-4 text-center font-italic">
     No Ethereum wallet was detected <br>
     Please install
     <a
@@ -9,8 +9,10 @@
     >
       MetaMask
     </a>
+    &nbsp;<Icon icon="logos:metamask-icon" />
   </div>
 </template>
       
 <script setup lang="ts">
+import { Icon } from '@iconify/vue';
 </script>

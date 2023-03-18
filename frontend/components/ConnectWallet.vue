@@ -7,12 +7,9 @@
       />
     </v-row>
     <div class="text-center my-2">
-      <div class="mb-2">
-        Please connect to your wallet.
-      </div>
       <v-btn
         variant="flat"
-        color="green"
+        color="primary"
         @click="connectWallet"
       >
         Connect Wallet
@@ -22,6 +19,7 @@
 </template>
       
 <script setup lang="ts">
+// import { Icon } from '@iconify/vue';
 defineProps({
   networkError: {
     type: String,

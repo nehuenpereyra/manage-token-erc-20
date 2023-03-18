@@ -1,8 +1,10 @@
 <template>
   <v-container>
+    <!--
     <div class="text-h6 font-weight-bold">
       Transfer
     </div>
+    -->
     <v-form v-model="valid">
       <v-text-field
         v-model="amount"
@@ -10,6 +12,7 @@
         type="number"
         :label="`Amount of ${tokenSymbol}`"
         required
+        class="mb-2"
       />
 
       <v-text-field
@@ -23,9 +26,10 @@
       @click="send"
       block
       class="mt-2"
-      color="success"
+      color="primary"
+      :disabled="sendRules()"
     >
-      Submit
+      Send
     </v-btn>
   </v-container>
 </template>
@@ -67,6 +71,14 @@ const recipientAddressRules = [
     return 'The address must have 10 characters as minimum.'
   }
 ]
+
+function sendRules (){
+  const amountInt = parseInt(amount.value)
+  if(amountInt > props.totalAmount || amountInt <= 0 ||
+    amount.value === '' || recipientAddress.value.length < 10)
+    return true
+  return false
+}
 
 function send(){
   if(valid.value)
