@@ -37,17 +37,28 @@ function saveFrontendFiles(token) {
     fs.mkdirSync(contractsDir);
   }
 
-  fs.writeFileSync(
-    path.join(contractsDir, "contract-address.json"),
-    JSON.stringify({ Token: token.address }, undefined, 2)
-  );
+  const pathSmartContract = path.join(contractsDir, "smart-contract.json")
+  const deployTransaction = {
+    hash: token.deployTransaction.hash,
+    chainId: token.deployTransaction.chainId
+  }
+  let jsonSmartContract = {}
+  if (fs.existsSync(pathSmartContract)) {
+    jsonSmartContract = JSON.parse(fs.readFileSync(pathSmartContract))
+    jsonSmartContract[deployTransaction.chainId] = token.address
+    jsonSmartContract = JSON.stringify(jsonSmartContract, undefined, 2)
+  } else {
+    jsonSmartContract = JSON.stringify({ [`${deployTransaction.chainId}`] : token.address }, undefined, 2)
+  }
+
+  fs.writeFileSync(pathSmartContract, jsonSmartContract);
 
   console.log('File contract-address.json created in frontend')
 
   const TokenArtifact = artifacts.readArtifactSync("Token");
 
   fs.writeFileSync(
-    path.join(contractsDir, "Token.json"),
+    path.join(contractsDir, "token.json"),
     JSON.stringify(TokenArtifact, null, 2)
   );
 

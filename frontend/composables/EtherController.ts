@@ -3,10 +3,10 @@ import { ethers } from 'ethers';
 import { StateDapp, Token } from '../types';
 import { reactive } from 'vue';
 
-import TokenArtifact from '../contracts/Token.json';
-import contractAddress from '../contracts/contract-address.json';
+import tokenArtifact from '../contracts/token.json';
+import smartContractFile from '../contracts/smart-contract.json';
 
-const HARDHAT_NETWORK_ID = '31337'; // ganache 5777 | hardhat 1337
+const smartContract =  JSON.parse(JSON.stringify(smartContractFile))
 
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
 
@@ -81,24 +81,23 @@ export class EtherController {
 
     this.state.selectedAddress = userAddress;
 
-    await this.initializeEthers();
+    await this.initializeContract();
     await this.getTokenData();
     await this.updateBalance();
     this.startPollingData();
     this.setLogo();
   }
 
-  private async initializeEthers() {
-    let provider;
-    if (window.ethereum)
-      provider = new ethers.providers.Web3Provider(window.ethereum);
-
-    /* tslint:disable-next-line */
-    this.token = new ethers.Contract(
-      contractAddress.Token,
-      TokenArtifact.abi,
-      provider?.getSigner(0)
-    );
+  private async initializeContract() {
+    if (window.ethereum){
+      const chainId = window.ethereum.networkVersion
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      this.token = new ethers.Contract(
+        smartContract[chainId],
+        tokenArtifact.abi,
+        provider?.getSigner(0)
+      );
+    }
   }
 
   private startPollingData() {
@@ -168,10 +167,14 @@ export class EtherController {
   }
 
   private checkNetwork() {
-    if (window.ethereum)
-      if (window.ethereum.networkVersion === HARDHAT_NETWORK_ID) return true;
-
-    this.state.networkError = 'Please connect Metamask to Localhost:8545';
+    if (window.ethereum && window.ethereum.networkVersion){
+      const chainId = `${window.ethereum.networkVersion}`
+      if (smartContract[chainId]) return true;
+    }
+    
+    const chainIds = Object.keys(smartContract)
+    
+    this.state.networkError = `Please connect Metamask to chainId: ${chainIds}`;
     return false;
   }
 
@@ -186,7 +189,7 @@ export class EtherController {
               type: 'ERC20',
               chainId: '1337',
               options: {
-                address: contractAddress.Token,
+                address: smartContract[ethereum.networkVersion as unknown as number],
                 symbol: this.state.tokenData?.symbol,
                 decimals: this.decimals,
                 image: 'https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.png?v=024' 
