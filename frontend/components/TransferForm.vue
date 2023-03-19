@@ -59,16 +59,16 @@ const amountRules = [
   (value: any) => {
     if (value > 0) {
       if(value > props.totalAmount)
-        return 'Amount exceeds balance.'
+        return 'Amount exceeds balance'
       return true
     }
-    return 'You have to send an amount.'
+    return 'You have to send an amount'
   }
 ]
 const recipientAddressRules = [
   (value: any) => {
     if (value?.length >= 10) return true
-    return 'The address must have 10 characters as minimum.'
+    return 'The address must have 10 characters as minimum'
   }
 ]
 

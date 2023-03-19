@@ -36,21 +36,40 @@
       <v-window-item :value="1">
         <v-card min-height="300">
           <v-card-text>
+            <TokenStatus
+              :currency="{
+                ...currencyStore.currency,
+                total: 30
+              }"
+              :token="{
+                ...currencyStore.token,
+                tokenAvailable: 500,
+                totalSupply: 10000
+              }"
+            />
             <ConvertTokensForm
-              v-if="true"
-              :token-symbol="'AT'"
               :transfer-tokens="()=>{}"
-              :total-amount="1000"
+              :currency="{
+                ...currencyStore.currency,
+                totalAmount: 1000
+              }"
+              :token="{
+                ...currencyStore.token,
+                totalAmount: 400
+              }"
+              :buy-tokens="()=>{}"
+              :repay-tokens="()=>{}"
             />
           </v-card-text>
         </v-card>
       </v-window-item>
       <v-window-item :value="2">
-        <v-card min-height="300">
-          <v-card-text>
+        <v-card
+          min-height="300"
+        >
+          <v-card-text class="mt-8">
             <TransferForm
-              v-if="true"
-              :token-symbol="'AT'"
+              :token-symbol="currencyStore.token.symbol"
               :transfer-tokens="()=>{}"
               :total-amount="1000"
             />
@@ -60,7 +79,24 @@
       <v-window-item :value="3">
         <v-card min-height="300">
           <v-card-text>
-            3
+            <TokenStatus
+              :admin="true"
+              :currency="{
+                ...currencyStore.currency,
+                total: 30
+              }"
+              :token="{
+                ...currencyStore.token,
+                tokenAvailable: 500,
+                totalSupply: 10000
+              }"
+            />
+            <AdminForm
+              :token-symbol="currencyStore.token.symbol"
+              :total-circulation="1000"
+              :mint-tokens="()=>{}"
+              :burn-tokens="()=>{}"
+            />
           </v-card-text>
         </v-card>
       </v-window-item>
@@ -69,7 +105,12 @@
 </template>
         
 <script setup lang="ts">
+import { useCurrencyStore } from '../store/currency';
 import { Icon } from '@iconify/vue';
+
 const tabs = ref(null) 
-const test = ref('0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f') 
+
+const currencyStore = useCurrencyStore();
+
+
 </script>

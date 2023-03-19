@@ -12,7 +12,7 @@
             type="number"
             variant="underlined"
             required
-            label="ET"
+            :label="sellToken.symbol"
             class="centered-input font-weight-bold"
           >
             <template #append>
@@ -31,7 +31,7 @@
         justify="center"
       >
         <div class="text-h4 font-weight-bold">
-          1000 AT
+          {{ convertion }} {{ buyToken.symbol }}
         </div>
       </v-row>
       <v-row
@@ -45,16 +45,16 @@
           style="pointer-events: none"
         >
           <div class="pr-2">
-            ET
+            {{ sellToken.symbol }}
           </div>
-          <Icon
-            :width="20"
-            icon="cryptocurrency-color:matic"
+          <IconToken
+            v-bind="sellToken.attrs"
           />
         </v-btn>
         <v-btn
           icon="mdi-cached"
           color="primary"
+          @click="changeMode"
         />  
         <v-btn
           color="background"
@@ -63,17 +63,16 @@
           style="pointer-events: none"
         >
           <div class="pr-2">
-            AT
+            {{ buyToken.symbol }}
           </div>
-          <Icon
-            :width="20"
-            icon="cryptocurrency-color:matic"
+          <IconToken
+            v-bind="buyToken.attrs"
           />
         </v-btn>
       </v-row>
     </v-form>
     <v-btn
-      @click="() =>{}"
+      @click="convertTokens"
       block
       class="mt-2"
       color="primary"
@@ -85,46 +84,106 @@
 </template>
   
 <script setup lang="ts">
-import { Icon } from '@iconify/vue';
+import type { PropType } from 'vue'
+
+type Money = {
+  img?: string
+  icon?: string
+  symbol: string
+  totalAmount: number
+}
+
 const props = defineProps({
-  tokenSymbol: {
-    type: String,
-    required: true
-  },
-  transferTokens: {
+  buyTokens: {
     type: Function,
     required: true
   },
-  totalAmount: {
-    type: Number,
+  repayTokens: {
+    type: Function,
+    required: true
+  },
+  currency: {
+    type: Object as PropType<Money>,
+    required: true
+  },
+  token: {
+    type: Object as PropType<Money>,
     required: true
   }
 });
   
 const amount = ref('0')
+const purchaseMode = ref(true)
 const valid = ref(false)
+
+const tokenAttrs = (token: Money) => {
+  if(token.img)
+    return {
+      width: 20,
+      src: token.img,
+      img: true
+    }
+  return {
+    width: 20,
+    icon: token.icon
+  }
+}
+
+const sellToken = ref({
+  ...props.currency,
+  attrs: tokenAttrs(props.currency)
+})
+
+const buyToken = ref({
+  ...props.token,
+  attrs: tokenAttrs(props.token)
+})
   
 const amountRules = [
   (value: any) => {
     if (value > 0) {
-      if(value > props.totalAmount)
-        return 'Amount exceeds balance.'
+      if(value > sellToken.value.totalAmount)
+        return 'Amount exceeds balance'
       return true
     }
-    return 'You have to send an amount.'
+    return 'You have to send an amount'
   }
 ]
 
 function convertRules (){
   const amountInt = parseInt(amount.value)
-  if(amountInt > props.totalAmount || amountInt <= 0 || amount.value === '')
+  if(amountInt > sellToken.value.totalAmount || amountInt <= 0 || amount.value === '')
     return true
   return false
 }
 
 function setMax (){
-  amount.value =  (props.totalAmount).toString()
+  amount.value =  (sellToken.value.totalAmount).toString()
 }
+
+function convertTokens (){
+  if(purchaseMode)
+    props.buyTokens()
+  else 
+    props.repayTokens()
+}
+
+const convertion = computed(() => {
+  const amountInt = amount.value === '' ? 0 : parseFloat(amount.value)
+  if(purchaseMode.value)
+    return (amountInt / 0.2).toFixed(2)
+  else 
+    return (amountInt * 0.2).toFixed(2)
+})
+
+function changeMode () {
+  purchaseMode.value = !purchaseMode.value
+  amount.value = '0'
+  const aux = sellToken.value
+  sellToken.value = buyToken.value
+  buyToken.value = aux
+}
+
 
   
 </script>

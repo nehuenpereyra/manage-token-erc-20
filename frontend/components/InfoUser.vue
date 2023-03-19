@@ -6,7 +6,7 @@
         sm="6"
       >
         <v-text-field
-          v-model="account"
+          :value="account"
           @keypress.prevent
           hide-details
           class="pr-3"
@@ -28,16 +28,15 @@
         class="d-flex justify-center justify-sm-end align-center pb-4 pr-6"
       >
         <div
-          v-for="(token, index) in tokens"
+          v-for="(item, index) in items"
           :key="index"
           class="d-flex align-center pl-2"
         >
           <div class="font-weight-bold pr-2">
-            {{ token.total }}
+            {{ item.total }}
           </div>
-          <Icon
-            :width="30"
-            icon="cryptocurrency-color:matic"
+          <IconToken
+            v-bind="item.attrs"
           />
         </div>
       </v-col>
@@ -46,17 +45,51 @@
 </template>
           
 <script setup lang="ts">
+import type { PropType } from 'vue'
 import { Icon } from '@iconify/vue';
-const account = ref('0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f')
 
-const tokens = [
-  {
-    icon: 'cryptocurrency-color:matic',
-    total: 500000
+type Money = {
+  total: number
+  img?: string
+  icon?: string
+}
+
+const props = defineProps({
+  account: {
+    type: String,
+    required: true
   },
-  {
-    icon: 'cryptocurrency-color:matic',
-    total: 500000
+  currency: {
+    type: Object as PropType<Money>,
+    required: true
+  },
+  token: {
+    type: Object as PropType<Money>,
+    required: true
   }
-]
+});
+
+const items = computed(() => {
+  return [props.token, props.currency].map(token => {
+    if(token.img)
+      return {
+        total: token.total,
+        attrs: {
+          width: 30,
+          src: token.img,
+          img: true,
+          class: 'pb-2'
+        }
+      }
+    return {
+      total: token.total,
+      attrs: {
+        width: 30,
+        icon: token.icon
+      }
+      
+    }
+  })
+})
+
 </script>
