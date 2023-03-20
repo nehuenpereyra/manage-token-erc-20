@@ -43,7 +43,7 @@
               }"
               :token="{
                 ...currencyStore.token,
-                tokenAvailable: 500,
+                tokenAvailable: controller.state.balanceTokensSC || 0,
                 totalSupply: 10000
               }"
             />
@@ -51,14 +51,15 @@
               :transfer-tokens="()=>{}"
               :currency="{
                 ...currencyStore.currency,
-                totalAmount: 1000
+                totalAmount: 2000
               }"
               :token="{
                 ...currencyStore.token,
-                totalAmount: 400
+                totalAmount: controller.state.balance || 0
               }"
-              :buy-tokens="()=>{}"
-              :repay-tokens="()=>{}"
+              :buy-tokens="controller.buyTokens"
+              :repay-tokens="controller.repayTokens"
+              :max-circulation="controller.state.balanceTokensSC || 0"
             />
           </v-card-text>
         </v-card>
@@ -71,7 +72,7 @@
             <TransferForm
               :token-symbol="currencyStore.token.symbol"
               :transfer-tokens="()=>{}"
-              :total-amount="1000"
+              :total-amount="controller.state.balence || 0"
             />
           </v-card-text>
         </v-card>
@@ -87,13 +88,13 @@
               }"
               :token="{
                 ...currencyStore.token,
-                tokenAvailable: 500,
+                tokenAvailable: controller.state.balanceTokensSC || 0,
                 totalSupply: 10000
               }"
             />
             <AdminForm
               :token-symbol="currencyStore.token.symbol"
-              :total-circulation="1000"
+              :total-circulation="controller.state.balanceTokensSC || 0"
               :mint-tokens="()=>{}"
               :burn-tokens="()=>{}"
             />
@@ -107,6 +108,14 @@
 <script setup lang="ts">
 import { useCurrencyStore } from '../store/currency';
 import { Icon } from '@iconify/vue';
+
+defineProps({
+  controller: {
+    type: Object,
+    required: true
+  }
+});
+
 
 const tabs = ref(null) 
 

@@ -35,9 +35,9 @@ contract Token is ERC20, Ownable, ReentrancyGuard {
         _burn(address(this), amount);
     }
 
-    // ERC-20 tokens purchase
+    // ERC-20 tokens purchase - numToken * decimals()
     function buyTokens(uint256 numTokens) public payable nonReentrant {
-        uint256 cost = priceTokens(numTokens);
+        uint256 cost = priceTokens(numTokens / (10 ** decimals()));
         require(msg.value >= cost, "Buy less tokens or pay with more ethers");
         uint256 balance = balanceTokensSC();
         require(numTokens <= balance, "Buy a smaller number of tokens");
@@ -57,7 +57,7 @@ contract Token is ERC20, Ownable, ReentrancyGuard {
             "You don't have the tokens you want to return"
         );
         _transfer(msg.sender, address(this), numTokens);
-        payable(msg.sender).transfer(priceTokens(numTokens));
+        payable(msg.sender).transfer(priceTokens(numTokens / (10 ** decimals())));
     }
 
     // ERC-20 tokens price

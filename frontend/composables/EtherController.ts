@@ -1,5 +1,5 @@
 import autoBind from 'auto-bind';
-import { ethers } from 'ethers';
+import { ethers, BigNumber } from 'ethers';
 import { StateDapp, Token } from '../types';
 import { reactive } from 'vue';
 
@@ -15,9 +15,11 @@ const fromWei = (num: string) => ethers.utils.formatEther(num)
 
 export class EtherController {
   private decimals = 18;
+  private price = 0.2;
   public state: StateDapp;
   private token: Token | undefined;
   private pollDataInterval: ReturnType<typeof setInterval> | undefined;
+  private provider: any;
 
   constructor() {
     autoBind(this)
@@ -42,10 +44,11 @@ export class EtherController {
 
   async connectWallet() {
 
-    if (window.ethereum && window.ethereum.request) {
+    if (window.ethereum.request) {
       const [selectedAddress] = await window.ethereum.request({
         method: 'eth_requestAccounts'
       });
+      
 
       if (!this.checkNetwork()) return;
 
@@ -73,35 +76,41 @@ export class EtherController {
       balance: undefined,
       txBeingSent: undefined,
       transactionError: undefined,
-      networkError: undefined
+      networkError: undefined,
+      balanceEthers: undefined,
+      balanceTokensSC: undefined
     };
   }
 
   private async initialize(userAddress: string) {
 
     this.state.selectedAddress = userAddress;
-
+    this.provider = new ethers.providers.Web3Provider(window.ethereum);
     await this.initializeContract();
     await this.getTokenData();
+    await this.updateBalanceEthers();
+    await this.updateBalanceTokensSC();
     await this.updateBalance();
     this.startPollingData();
     this.setLogo();
+
   }
 
   private async initializeContract() {
-    if (window.ethereum){
-      const chainId = window.ethereum.networkVersion
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      this.token = new ethers.Contract(
-        smartContract[chainId],
-        tokenArtifact.abi,
-        provider?.getSigner(0)
-      );
-    }
+    const chainId = window.ethereum.networkVersion
+    this.token = new ethers.Contract(
+      smartContract[chainId],
+      tokenArtifact.abi,
+      this.provider.getSigner(0)
+    );
   }
 
   private startPollingData() {
-    this.pollDataInterval = setInterval(() => this.updateBalance(), 1000);
+    this.pollDataInterval = setInterval(() => {
+      this.updateBalance()
+      this.updateBalanceEthers()
+      this.updateBalanceTokensSC()
+    }, 5000);
   }
 
   stopPollingData() {
@@ -130,6 +139,20 @@ export class EtherController {
     }
   }
 
+  private updateBalanceEthers() {
+    this.provider.getBalance(this.state.selectedAddress).then(
+      (balance: BigNumber) =>{
+        this.state.balanceEthers =  parseFloat(fromWei(balance.toString()))
+      }) 
+  }
+
+  private async updateBalanceTokensSC() {
+    if (this.token && this.token.balanceTokensSC && this.state.selectedAddress){
+      const balance = await this.token.balanceTokensSC()
+      this.state.balanceTokensSC = parseFloat(fromWei(balance))
+    }
+  }
+
   async transferTokens(to: string, amount: number) {
     try {
       this.dismissTransactionError();
@@ -137,6 +160,45 @@ export class EtherController {
       if (this.token && this.token.transfer) {
         const total = toWei(amount)
         const tx = await this.token.transfer(to, total);
+        this.state.txBeingSent = tx.hash;
+        const receipt = await tx.wait();
+        if (receipt.status === 0) throw new Error('Transaction failed');
+        await this.updateBalance();
+      }
+    } catch (error: any) {
+      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
+      this.state.transactionError = error;
+    } finally {
+      this.state.txBeingSent = undefined;
+    }
+  }
+
+  async buyTokens(amount: number) {
+    try {
+      this.dismissTransactionError();
+
+      if (this.token && this.token.buyTokens) {
+        const totalPriceInWei = toWei(amount);
+        const tx = await this.token.buyTokens(toWei(amount/this.price).toString(), {value:totalPriceInWei});
+        this.state.txBeingSent = tx.hash;
+        const receipt = await tx.wait();
+        if (receipt.status === 0) throw new Error('Transaction failed');
+        await this.updateBalance();
+      }
+    } catch (error: any) {
+      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
+      this.state.transactionError = error;
+    } finally {
+      this.state.txBeingSent = undefined;
+    }
+  }
+
+  async repayTokens(amount: number) {
+    try {
+      this.dismissTransactionError();
+
+      if (this.token && this.token.repayTokens) {
+        const tx = await this.token.repayTokens(toWei(amount).toString());
         this.state.txBeingSent = tx.hash;
         const receipt = await tx.wait();
         if (receipt.status === 0) throw new Error('Transaction failed');
@@ -167,10 +229,8 @@ export class EtherController {
   }
 
   private checkNetwork() {
-    if (window.ethereum && window.ethereum.networkVersion){
-      const chainId = `${window.ethereum.networkVersion}`
-      if (smartContract[chainId]) return true;
-    }
+    const chainId = `${window.ethereum.networkVersion}`
+    if (smartContract[chainId]) return true;
     
     const chainIds = Object.keys(smartContract)
     
@@ -197,7 +257,7 @@ export class EtherController {
             }
           });
       } catch (error) {
-        console.log(error);
+        // console.log(error);
       }
     }
   }

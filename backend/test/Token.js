@@ -9,7 +9,7 @@ const PRICE = 0.2;
 describe("Token contract", () => {
 
   async function deployTokenFixture() {
-    const initialSupply = '10000';
+    const initialSupply = '1000000000000000000000';
 
     const Token = await ethers.getContractFactory("Token");
 
@@ -24,7 +24,7 @@ describe("Token contract", () => {
 
   async function buyTokens(token, address, numTokens) {
     const buyPriceInWei = toWei(numTokens * PRICE);
-    await token.connect(address).buyTokens(numTokens, { value: buyPriceInWei });
+    await token.connect(address).buyTokens(toWei(numTokens), { value: buyPriceInWei });
   }
 
   describe("Deployment", () =>  {
@@ -60,7 +60,7 @@ describe("Token contract", () => {
 
       const totalPriceInWei = toWei(amount * PRICE);
 
-      const tx = await token.connect(addr1).buyTokens(amount, { value: totalPriceInWei });
+      const tx = await token.connect(addr1).buyTokens(toWei(amount), { value: totalPriceInWei });
       const gas = tx.gasPrice
       await tx.wait();
       
@@ -73,8 +73,8 @@ describe("Token contract", () => {
       expect(fromWei(scFinalEthBal)).to.equal(fromWei(scInitialEthBal.add(totalPriceInWei)));
       expect(parseInt(fromWei(addr1FinalEthBal))).to.equal(parseInt(fromWei(addr1InitialEthBal.sub(totalPriceInWei).sub(gas))));
 
-      expect(scFinalTokensBal).to.equal(scInitialTokensBal.sub(amount));
-      expect(addr1FinalTokensBal).to.equal(addr1InitialTokensBal.add(amount));
+      expect(scFinalTokensBal).to.equal(scInitialTokensBal.sub(toWei(amount)));
+      expect(addr1FinalTokensBal).to.equal(addr1InitialTokensBal.add(toWei(amount)));
     });
 
     it("Users should be able to return tokens", async () => {
@@ -82,7 +82,7 @@ describe("Token contract", () => {
 
       const numTokens = 50
       const buyPriceInWei = toWei(numTokens * PRICE);
-      await token.connect(addr1).buyTokens(numTokens, { value: buyPriceInWei });
+      await token.connect(addr1).buyTokens(toWei(numTokens), { value: buyPriceInWei });
 
       const scInitialEthBal = await ethers.provider.getBalance(token.address);
       const addr1InitialEthBal = await ethers.provider.getBalance(addr1.address);
@@ -92,7 +92,7 @@ describe("Token contract", () => {
 
       const totalPriceInWei = toWei(numTokens * PRICE);
       
-      const tx = await token.connect(addr1).repayTokens(numTokens);
+      const tx = await token.connect(addr1).repayTokens(toWei(numTokens));
       const gas = tx.gasPrice
       await tx.wait();
 
@@ -106,8 +106,8 @@ describe("Token contract", () => {
       expect(parseInt(fromWei(scFinalEthBal))).to.equal(0);
       expect(parseInt(fromWei(addr1FinalEthBal))).to.equal(parseInt(fromWei(addr1InitialEthBal.add(totalPriceInWei).sub(gas))));
 
-      expect(scFinalTokensBal).to.equal(scInitialTokensBal.add(numTokens));
-      expect(addr1FinalTokensBal).to.equal(addr1InitialTokensBal.sub(numTokens));
+      expect(scFinalTokensBal).to.equal(scInitialTokensBal.add(toWei(numTokens)));
+      expect(addr1FinalTokensBal).to.equal(addr1InitialTokensBal.sub(toWei(numTokens)));
     });
 
   })
@@ -231,7 +231,7 @@ describe("Token contract", () => {
 
       const scFinalBalance = await  token.balanceOf(token.address);
      
-      expect(scFinalBalance.toNumber()).to.equal(scInitialBalance.add(numTokens).toNumber());
+      expect(scFinalBalance.toString()).to.equal(scInitialBalance.add(numTokens).toString());
     });
 
     it("Burn tokens", async () => {
@@ -248,7 +248,7 @@ describe("Token contract", () => {
 
       const scFinalBalance = await  token.balanceOf(token.address);
      
-      expect(scFinalBalance.toNumber()).to.equal(scInitialBalance.sub(numTokens).toNumber());
+      expect(scFinalBalance.toString()).to.equal(scInitialBalance.sub(numTokens).toString());
     });
     
   })

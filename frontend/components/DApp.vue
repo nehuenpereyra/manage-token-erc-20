@@ -1,13 +1,13 @@
 <template>
   <div>
-    <AllComponents v-if="true" />
+    <AllComponents v-if="false" />
     <div
       v-else
       class="d-flex align-center flex-column"
     >
       <v-card
         class="mx-auto"
-        max-width="800"
+        width="800"
       >
         <v-card-item>
           <NoWalletDetected v-if="etherController.disabledEthereum()" />
@@ -18,6 +18,7 @@
               :dismiss="etherController.dismissNetworkError"
               :connect-wallet="etherController.connectWallet"
             />
+            <!--
             <DDetail
               v-if="etherController.state.selectedAddress!==undefined"
               :token-data="etherController.state.tokenData || {
@@ -31,7 +32,11 @@
               :dismiss-transaction-error="etherController.dismissTransactionError"
               :transfer-tokens="etherController.transferTokens"
             />
-            <!-- <DLoading v-if="ethers.isLoading()" /> -->
+             <DLoading v-if="ethers.isLoading()" /> -->
+            <HomeComponent
+              v-if="etherController.state.selectedAddress!==undefined"
+              :ether-controller="etherController"
+            />
           </template>
         </v-card-item>
       </v-card>

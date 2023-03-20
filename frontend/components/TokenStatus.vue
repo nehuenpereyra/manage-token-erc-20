@@ -9,7 +9,16 @@
         :class="`d-flex align-center pl-2 ${!admin?'pr-2':''}`"
       >
         <div class="font-weight-bold pr-2">
-          Tokens available: {{ token.tokenAvailable }}
+          Tokens available: {{ token.tokenAvailable.toFixed(2) }}
+        </div>
+        <IconToken v-bind="itemsAttrs[0]" />
+      </div>
+      <div
+        v-if="admin && token.totalSupply"
+        class="d-flex align-center pl-2"
+      >
+        <div class="font-weight-bold pr-2">
+          Total supply: {{ token.totalSupply.toFixed(2) }}
         </div>
         <IconToken v-bind="itemsAttrs[0]" />
       </div>
@@ -18,16 +27,7 @@
         class="d-flex align-center pl-2"
       >
         <div class="font-weight-bold pr-2">
-          Total supply: {{ token.totalSupply }}
-        </div>
-        <IconToken v-bind="itemsAttrs[0]" />
-      </div>
-      <div
-        v-if="admin"
-        class="d-flex align-center pl-2"
-      >
-        <div class="font-weight-bold pr-2">
-          {{ currency.name }} avalibre in SC: {{ currency.total }}
+          {{ currency.name }} avalibre in SC: {{ currency.total.toFixed(2) }}
         </div>
         <IconToken v-bind="itemsAttrs[1]" />
       </div>
@@ -42,7 +42,7 @@ type Token = {
   img?: string;
   icon?: string;
   tokenAvailable: number;
-  totalSupply: number;
+  totalSupply?: number;
 };
 
 type Currency = {

@@ -45,7 +45,6 @@
         />
       </v-card-item>
       <InfoUser
-        class="mt-16"
         :account="'0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f'"
         :currency="{
           ...currencyStore.currency,
@@ -56,7 +55,9 @@
           total: 400
         }"
       />
-      <TabBarMenu />
+      <TabBarMenu
+        :controller="{}"
+      />
     </v-card>
   </div>
 </template>

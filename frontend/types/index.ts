@@ -9,7 +9,7 @@ interface CustomExternalProvider extends ExternalProvider{
 
 declare global {
     interface Window {
-        ethereum?: CustomExternalProvider
+        ethereum: CustomExternalProvider
     }
 }
 
@@ -34,9 +34,12 @@ export interface StateDapp  {
     balance: number | undefined,
     txBeingSent: string | undefined,
     transactionError: TransactionError | undefined,
-    networkError: string | undefined
+    networkError: string | undefined,
+    balanceEthers: number | undefined,
+    balanceTokensSC: number | undefined,
 }
 
+type value = {value: BigNumber}
 export interface Token extends BaseContract{
     name?: () => string,
     symbol?: () => string,
@@ -44,6 +47,15 @@ export interface Token extends BaseContract{
     transfer?: (to: string, amount: BigNumber) => {
         hash: string,
         wait: () => {status: number}
-    }
+    },
+    balanceTokensSC?:() => string ,
+    buyTokens?: (amount: string, value: value) => {
+        hash: string,
+        wait: () => {status: number}
+    },
+    repayTokens?: (amount: string) => {
+        hash: string,
+        wait: () => {status: number}
+    },
 }
 

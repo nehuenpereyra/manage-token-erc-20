@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-form
-      v-model="valid"
+      v-model="validForm"
       class="pb-4"
     >
       <v-row justify="center">
@@ -109,12 +109,17 @@ const props = defineProps({
   token: {
     type: Object as PropType<Money>,
     required: true
+  },
+  maxCirculation: {
+    type: Number,
+    required: true
   }
 });
   
 const amount = ref('0')
 const purchaseMode = ref(true)
-const valid = ref(false)
+const validForm = ref(false)
+const PRICE = 0.2
 
 const tokenAttrs = (token: Money) => {
   if(token.img)
@@ -144,6 +149,8 @@ const amountRules = [
     if (value > 0) {
       if(value > sellToken.value.totalAmount)
         return 'Amount exceeds balance'
+      if(purchaseMode.value && value > props.maxCirculation*PRICE)
+        return 'Amount exceeds circulation tokens'
       return true
     }
     return 'You have to send an amount'
@@ -152,36 +159,63 @@ const amountRules = [
 
 function convertRules (){
   const amountInt = parseInt(amount.value)
-  if(amountInt > sellToken.value.totalAmount || amountInt <= 0 || amount.value === '')
+  if(amountInt > sellToken.value.totalAmount || !validForm.value || 
+  amount.value === '' )
     return true
   return false
 }
 
 function setMax (){
-  amount.value =  (sellToken.value.totalAmount).toString()
+  if(purchaseMode.value){
+    if(sellToken.value.totalAmount >= props.maxCirculation*PRICE)
+      amount.value = (props.maxCirculation*PRICE).toString()
+  }
+  else
+    amount.value =  (sellToken.value.totalAmount).toString()
 }
 
 function convertTokens (){
-  if(purchaseMode)
-    props.buyTokens()
+  if(purchaseMode.value)
+    props.buyTokens(parseFloat(amount.value))
   else 
-    props.repayTokens()
+    props.repayTokens(parseFloat(amount.value))
+  
+    
 }
 
 const convertion = computed(() => {
   const amountInt = amount.value === '' ? 0 : parseFloat(amount.value)
   if(purchaseMode.value)
-    return (amountInt / 0.2).toFixed(2)
+    return (amountInt / PRICE).toFixed(2)
   else 
-    return (amountInt * 0.2).toFixed(2)
+    return (amountInt * PRICE).toFixed(2)
 })
 
 function changeMode () {
   purchaseMode.value = !purchaseMode.value
   amount.value = '0'
-  const aux = sellToken.value
-  sellToken.value = buyToken.value
-  buyToken.value = aux
+  if(purchaseMode.value){
+    sellToken.value = {
+      ...props.currency,
+      attrs: tokenAttrs(props.currency)
+    }
+
+    buyToken.value = {
+      ...props.token,
+      attrs: tokenAttrs(props.token)
+    }
+  } else {
+    sellToken.value =   {
+      ...props.token,
+      attrs: tokenAttrs(props.token)
+    }
+
+    buyToken.value ={
+      ...props.currency,
+      attrs: tokenAttrs(props.currency)
+    }
+
+  }
 }
 
 

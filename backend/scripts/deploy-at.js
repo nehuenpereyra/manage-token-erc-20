@@ -19,7 +19,7 @@ async function main() {
 
   console.log("Account balance:", `${fromWei(await deployer.getBalance())} ETH`);
 
-  let initialSupply = '1000';
+  let initialSupply = '1000000000000000000000'; // 1000 * 1e18
 
   const Token = await ethers.getContractFactory("Token");
   const token = await Token.deploy('AsianToken', 'AT', initialSupply);

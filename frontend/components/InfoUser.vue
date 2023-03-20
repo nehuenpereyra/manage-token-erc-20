@@ -33,7 +33,7 @@
           class="d-flex align-center pl-2"
         >
           <div class="font-weight-bold pr-2">
-            {{ item.total }}
+            {{ item.total.toFixed(2) }}
           </div>
           <IconToken
             v-bind="item.attrs"
