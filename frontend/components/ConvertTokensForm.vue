@@ -13,7 +13,7 @@
             variant="underlined"
             required
             :label="sellToken.symbol"
-            class="centered-input font-weight-bold"
+            class="centered-input font-weight-bold centered-input-label"
           >
             <template #append>
               <div
@@ -145,11 +145,14 @@ const buyToken = ref({
 })
   
 const amountRules = [
-  (value: any) => {
-    if (value > 0) {
-      if(value > sellToken.value.totalAmount)
+  (value: string) => {
+    const valueInt: number = parseFloat(value)
+    if(valueInt === 0 || value === '')
+      return true
+    if (valueInt > 0) {
+      if(valueInt > sellToken.value.totalAmount)
         return 'Amount exceeds balance'
-      if(purchaseMode.value && value > props.maxCirculation*PRICE)
+      if(purchaseMode.value && valueInt > props.maxCirculation*PRICE)
         return 'Amount exceeds circulation tokens'
       return true
     }
@@ -160,7 +163,7 @@ const amountRules = [
 function convertRules (){
   const amountInt = parseInt(amount.value)
   if(amountInt > sellToken.value.totalAmount || !validForm.value || 
-  amount.value === '' )
+  amount.value === '' || amount.value === '0' )
     return true
   return false
 }
@@ -171,7 +174,7 @@ function setMax (){
       amount.value = (props.maxCirculation*PRICE).toString()
   }
   else
-    amount.value =  (sellToken.value.totalAmount).toString()
+    amount.value =  (props.token.totalAmount).toString()
 }
 
 function convertTokens (){
@@ -180,7 +183,7 @@ function convertTokens (){
   else 
     props.repayTokens(parseFloat(amount.value))
   
-    
+  amount.value = '0'   
 }
 
 const convertion = computed(() => {
@@ -226,5 +229,9 @@ function changeMode () {
 
 .centered-input input {
     text-align: center;
+}
+
+.centered-input-label.v-text-field--flush-details .v-input__details {
+  text-align: center;
 }
 </style>

@@ -56,9 +56,12 @@ const recipientAddress = ref('')
 const valid = ref(false)
 
 const amountRules = [
-  (value: any) => {
-    if (value > 0) {
-      if(value > props.totalAmount)
+  (value: string) => {
+    const valueInt: number = parseFloat(value)
+    if(valueInt === 0 || value === '')
+      return true
+    if (valueInt > 0) {
+      if(valueInt > props.totalAmount)
         return 'Amount exceeds balance'
       return true
     }
@@ -66,7 +69,9 @@ const amountRules = [
   }
 ]
 const recipientAddressRules = [
-  (value: any) => {
+  (value: string) => {
+    if(value === '')
+      return true
     if (value?.length >= 10) return true
     return 'The address must have 10 characters as minimum'
   }
@@ -81,8 +86,12 @@ function sendRules (){
 }
 
 function send(){
-  if(valid.value)
+  if(valid.value) {
     props.transferTokens(recipientAddress.value, amount.value)
+    amount.value = ''
+    recipientAddress.value = ''
+  }
+    
 }
 
 </script>

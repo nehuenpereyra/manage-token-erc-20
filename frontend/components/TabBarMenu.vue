@@ -71,8 +71,8 @@
           <v-card-text class="mt-8">
             <TransferForm
               :token-symbol="currencyStore.token.symbol"
-              :transfer-tokens="()=>{}"
-              :total-amount="controller.state.balence || 0"
+              :transfer-tokens="controller.transferTokens"
+              :total-amount="controller.state.balance || 0"
             />
           </v-card-text>
         </v-card>
