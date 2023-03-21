@@ -3,12 +3,11 @@ import { ethers, BigNumber } from 'ethers';
 import { StateDapp, Token } from '../types';
 import { reactive } from 'vue';
 
+
 import tokenArtifact from '../contracts/token.json';
 import smartContractFile from '../contracts/smart-contract.json';
 
 const smartContract =  JSON.parse(JSON.stringify(smartContractFile))
-
-const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
 
 const toWei = (num: number) => ethers.utils.parseEther(num.toString())
 const fromWei = (num: string) => ethers.utils.formatEther(num)
@@ -74,14 +73,19 @@ export class EtherController {
       tokenData: undefined,
       selectedAddress: undefined,
       balance: undefined,
-      txBeingSent: undefined,
       transactionError: undefined,
       networkError: undefined,
       balanceEthers: undefined,
       balanceTokensSC: undefined,
       isOwner: undefined,
       balanceEthersSC: undefined,
-      totalSupply: undefined
+      totalSupply: undefined,
+      loadings: {
+        convert: false,
+        transfer: false,
+        mint: false,
+        burn: false
+      }
     };
   }
 
@@ -177,103 +181,91 @@ export class EtherController {
 
   async transferTokens(to: string, amount: number) {
     try {
-      this.dismissTransactionError();
-
       if (this.token && this.token.transfer) {
         const total = toWei(amount)
         const tx = await this.token.transfer(to, total);
-        this.state.txBeingSent = tx.hash;
+        this.state.loadings.transfer = true;
         const receipt = await tx.wait();
         if (receipt.status === 0) throw new Error('Transaction failed');
         await this.updateBalance();
       }
     } catch (error: any) {
-      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
-      this.state.transactionError = error;
+      this.showTransactionError(error.reason);
     } finally {
-      this.state.txBeingSent = undefined;
+      this.state.loadings.transfer = false;
     }
   }
 
   async buyTokens(amount: number) {
     try {
-      this.dismissTransactionError();
-
       if (this.token && this.token.buyTokens) {
         const totalPriceInWei = toWei(amount);
         const tx = await this.token.buyTokens(toWei(amount/this.price).toString(), {value:totalPriceInWei});
-        this.state.txBeingSent = tx.hash;
+        this.state.loadings.convert = true;
         const receipt = await tx.wait();
         if (receipt.status === 0) throw new Error('Transaction failed');
         await this.updateBalance();
       }
     } catch (error: any) {
-      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
-      this.state.transactionError = error;
+      this.showTransactionError(error.reason); // error.error.data.message
     } finally {
-      this.state.txBeingSent = undefined;
+      this.state.loadings.convert = false;
     }
   }
 
   async repayTokens(amount: number) {
     try {
-      this.dismissTransactionError();
-
       if (this.token && this.token.repayTokens) {
         const tx = await this.token.repayTokens(toWei(amount).toString());
-        this.state.txBeingSent = tx.hash;
+        this.state.loadings.convert = true;
         const receipt = await tx.wait();
         if (receipt.status === 0) throw new Error('Transaction failed');
         await this.updateBalance();
       }
     } catch (error: any) {
-      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
-      this.state.transactionError = error;
+      this.showTransactionError(error.reason);
     } finally {
-      this.state.txBeingSent = undefined;
+      this.state.loadings.convert = false;
     }
   }
 
   async mintTokens(amount: number) {
     try {
-      this.dismissTransactionError();
-
       if (this.token && this.token.mint) {
         const tx = await this.token.mint(toWei(amount).toString());
-        this.state.txBeingSent = tx.hash;
+        this.state.loadings.mint = true;
         const receipt = await tx.wait();
         if (receipt.status === 0) throw new Error('Transaction failed');
         await this.updateBalanceOwner();
       }
     } catch (error: any) {
-      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
-      this.state.transactionError = error;
+      this.showTransactionError(error.reason);
     } finally {
-      this.state.txBeingSent = undefined;
+      this.state.loadings.mint = false;
     }
   }
 
   async burnTokens(amount: number) {
     try {
-      this.dismissTransactionError();
-
       if (this.token && this.token.burn) {
         const tx = await this.token.burn(toWei(amount).toString());
-        this.state.txBeingSent = tx.hash;
+        this.state.loadings.burn = true;
         const receipt = await tx.wait();
         if (receipt.status === 0) throw new Error('Transaction failed');
         await this.updateBalanceOwner();
       }
     } catch (error: any) {
-      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
-      this.state.transactionError = error;
+      this.showTransactionError(error.reason);
     } finally {
-      this.state.txBeingSent = undefined;
+      this.state.loadings.burn = false;
     }
   }
 
-  public dismissTransactionError() {
-    this.state.transactionError = undefined;
+  public showTransactionError(message: string) {
+    this.state.transactionError = message;
+    setTimeout(() => {
+      this.state.transactionError = undefined;
+    }, 6000);
   }
 
   dismissNetworkError() {

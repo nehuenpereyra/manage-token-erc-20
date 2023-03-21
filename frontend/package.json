@@ -23,6 +23,7 @@
     "vitest": "^0.28.4"
   },
   "dependencies": {
+    "@enzoferey/ethers-error-parser": "^0.2.3",
     "@mdi/font": "^7.1.96",
     "@pinia/nuxt": "^0.4.6",
     "auto-bind": "^5.0.1",

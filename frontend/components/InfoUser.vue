@@ -13,11 +13,16 @@
         >
           <template #prepend>
             <div class="pl-2 pl-sm-4">
-              <Icon
-                :width="30"
-                icon="mdi:user"
-                color="orange"
-              />
+              <v-btn
+                :href="appStore.urlScan+account" 
+                target="_blank"
+              >
+                <Icon
+                  :width="30"
+                  icon="mdi:user"
+                  color="orange"
+                />
+              </v-btn>
             </div>
           </template>
         </v-text-field>
@@ -47,6 +52,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { Icon } from '@iconify/vue';
+import { useAppStore } from '../store/app';
 
 type Money = {
   total: number
@@ -68,6 +74,10 @@ const props = defineProps({
     required: true
   }
 });
+
+
+
+const appStore = useAppStore();
 
 const items = computed(() => {
   return [props.token, props.currency].map(token => {

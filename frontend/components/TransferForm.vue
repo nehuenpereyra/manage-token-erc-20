@@ -28,6 +28,7 @@
       class="mt-2"
       color="primary"
       :disabled="sendRules()"
+      :loading="loading"
     >
       Send
     </v-btn>
@@ -47,6 +48,10 @@ const props = defineProps({
   },
   totalAmount: {
     type: Number,
+    required: true
+  },
+  loading: {
+    type: Boolean,
     required: true
   }
 });

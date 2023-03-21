@@ -18,13 +18,13 @@
   
 <script setup lang="ts">
 import { useCurrencyStore } from '../store/currency';
+
 defineProps({
   etherController: {
     type: Object,
     required: true
   }
 });
-
 
 const currencyStore = useCurrencyStore();
 

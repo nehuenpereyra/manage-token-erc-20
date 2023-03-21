@@ -74,6 +74,7 @@ module.exports = {
     defineNuxtConfig: 'readonly',
     defineNuxtPlugin: 'readonly',
     defineStore: 'readonly',
-    computed:'readonly'
+    computed:'readonly',
+    watch: 'readonly'
   }
 }

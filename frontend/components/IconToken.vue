@@ -13,6 +13,7 @@
     
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
+
 defineProps({
   img : {
     type: Boolean,
@@ -20,6 +21,5 @@ defineProps({
     default: false
   }
 });
-
 
 </script>

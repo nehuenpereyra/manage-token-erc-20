@@ -14,6 +14,7 @@
       block
       color="primary"
       :disabled="mintDisable()"
+      :loading="mintLoading"
     >
       Mint
     </v-btn>
@@ -35,6 +36,7 @@
       color="red"
       class="color-red-disabled"
       :disabled="burnDisable()"
+      :loading="burnLoading"
     >
       Burn
     </v-btn>
@@ -58,6 +60,14 @@ const props = defineProps({
   },
   totalCirculation: {
     type: Number,
+    required: true
+  },
+  mintLoading: {
+    type: Boolean,
+    required: true
+  },
+  burnLoading: {
+    type: Boolean,
     required: true
   }
 });

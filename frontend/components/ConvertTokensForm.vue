@@ -77,6 +77,7 @@
       class="mt-2"
       color="primary"
       :disabled="convertRules()"
+      :loading="loading"
     >
       Convert
     </v-btn>
@@ -113,6 +114,10 @@ const props = defineProps({
   maxCirculation: {
     type: Number,
     required: true
+  },
+  loading: {
+    type: Boolean,
+    required: true
   }
 });
   
@@ -134,16 +139,6 @@ const tokenAttrs = (token: Money) => {
   }
 }
 
-const sellToken = ref({
-  ...props.currency,
-  attrs: tokenAttrs(props.currency)
-})
-
-const buyToken = ref({
-  ...props.token,
-  attrs: tokenAttrs(props.token)
-})
-  
 const amountRules = [
   (value: string) => {
     const valueInt: number = parseFloat(value)
@@ -160,7 +155,7 @@ const amountRules = [
   }
 ]
 
-function convertRules (){
+const convertRules = () => {
   const amountInt = parseInt(amount.value)
   if(amountInt > sellToken.value.totalAmount || !validForm.value || 
   amount.value === '' || amount.value === '0' )
@@ -168,7 +163,7 @@ function convertRules (){
   return false
 }
 
-function setMax (){
+const setMax = () => {
   if(purchaseMode.value){
     if(sellToken.value.totalAmount >= props.maxCirculation*PRICE)
       amount.value = (props.maxCirculation*PRICE).toString()
@@ -177,7 +172,7 @@ function setMax (){
     amount.value =  (props.token.totalAmount).toString()
 }
 
-function convertTokens (){
+const convertTokens = () => {
   if(purchaseMode.value)
     props.buyTokens(parseFloat(amount.value))
   else 
@@ -194,33 +189,36 @@ const convertion = computed(() => {
     return (amountInt * PRICE).toFixed(2)
 })
 
-function changeMode () {
+const changeMode = () => {
   purchaseMode.value = !purchaseMode.value
   amount.value = '0'
-  if(purchaseMode.value){
-    sellToken.value = {
-      ...props.currency,
-      attrs: tokenAttrs(props.currency)
-    }
-
-    buyToken.value = {
-      ...props.token,
-      attrs: tokenAttrs(props.token)
-    }
-  } else {
-    sellToken.value =   {
-      ...props.token,
-      attrs: tokenAttrs(props.token)
-    }
-
-    buyToken.value ={
-      ...props.currency,
-      attrs: tokenAttrs(props.currency)
-    }
-
-  }
 }
 
+const sellToken = computed(() => {
+  if(purchaseMode.value)
+    return {
+      ...props.currency,
+      attrs: tokenAttrs(props.currency)
+    }
+  else 
+    return {
+      ...props.token,
+      attrs: tokenAttrs(props.token)
+    }
+})
+
+const buyToken = computed(() => {
+  if(purchaseMode.value)
+    return {
+      ...props.token,
+      attrs: tokenAttrs(props.token)
+    }
+  else 
+    return {
+      ...props.currency,
+      attrs: tokenAttrs(props.currency)
+    }
+})
 
   
 </script>

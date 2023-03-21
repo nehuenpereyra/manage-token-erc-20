@@ -40,6 +40,9 @@
           </template>
         </v-card-item>
       </v-card>
+      <SnackBarError
+        :message="etherController.state.transactionError || ''"
+      />
     </div>
   </div>
 </template>

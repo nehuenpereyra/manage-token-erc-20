@@ -44,15 +44,14 @@
               }"
               :token="{
                 ...currencyStore.token,
-                tokenAvailable: controller.state.balanceTokensSC || 0,
-                totalSupply: 10000
+                tokenAvailable: controller.state.balanceTokensSC || 0
               }"
             />
             <ConvertTokensForm
               :transfer-tokens="()=>{}"
               :currency="{
                 ...currencyStore.currency,
-                totalAmount: 2000
+                totalAmount: controller.state.balanceEthers || 0
               }"
               :token="{
                 ...currencyStore.token,
@@ -61,6 +60,7 @@
               :buy-tokens="controller.buyTokens"
               :repay-tokens="controller.repayTokens"
               :max-circulation="controller.state.balanceTokensSC || 0"
+              :loading="controller.state.loadings.convert"
             />
           </v-card-text>
         </v-card>
@@ -74,6 +74,7 @@
               :token-symbol="currencyStore.token.symbol"
               :transfer-tokens="controller.transferTokens"
               :total-amount="controller.state.balance || 0"
+              :loading="controller.state.loadings.transfer"
             />
           </v-card-text>
         </v-card>
@@ -101,6 +102,8 @@
               :total-circulation="controller.state.balanceTokensSC || 0"
               :mint-tokens="controller.mintTokens"
               :burn-tokens="controller.burnTokens"
+              :mint-loading="controller.state.loadings.mint"
+              :burn-loading="controller.state.loadings.burn"
             />
           </v-card-text>
         </v-card>
