@@ -78,7 +78,10 @@ export class EtherController {
       transactionError: undefined,
       networkError: undefined,
       balanceEthers: undefined,
-      balanceTokensSC: undefined
+      balanceTokensSC: undefined,
+      isOwner: undefined,
+      balanceEthersSC: undefined,
+      totalSupply: undefined
     };
   }
 
@@ -87,13 +90,16 @@ export class EtherController {
     this.state.selectedAddress = userAddress;
     this.provider = new ethers.providers.Web3Provider(window.ethereum);
     await this.initializeContract();
-    await this.getTokenData();
-    await this.updateBalanceEthers();
-    await this.updateBalanceTokensSC();
-    await this.updateBalance();
+    Promise.all([
+      this.getTokenData(),
+      this.updateBalanceEthers(),
+      this.updateBalanceTokensSC(),
+      this.updateBalance()
+    ])
     this.startPollingData();
+    if(this.state.isOwner)
+      this.updateBalanceOwner()
     this.setLogo();
-
   }
 
   private async initializeContract() {
@@ -103,6 +109,11 @@ export class EtherController {
       tokenArtifact.abi,
       this.provider.getSigner(0)
     );
+    if(this.token.owner && this.state.selectedAddress){
+      const owner = await this.token.owner();
+      this.state.isOwner = this.state.selectedAddress.toLowerCase() === owner.toLowerCase();
+    }
+    
   }
 
   private startPollingData() {
@@ -110,6 +121,8 @@ export class EtherController {
       this.updateBalance()
       this.updateBalanceEthers()
       this.updateBalanceTokensSC()
+      if(this.state.isOwner)
+        this.updateBalanceOwner()
     }, 5000);
   }
 
@@ -151,6 +164,15 @@ export class EtherController {
       const balance = await this.token.balanceTokensSC()
       this.state.balanceTokensSC = parseFloat(fromWei(balance))
     }
+  }
+
+  private async updateBalanceOwner() {
+    if (this.token && this.token.totalSupply && this.token.balanceEthersSC)
+      Promise.all([this.token.totalSupply(), this.token.balanceEthersSC()])
+        .then(responses => {
+          this.state.totalSupply = parseFloat(fromWei(responses[0]))
+          this.state.balanceEthersSC = parseFloat(responses[1])
+        });
   }
 
   async transferTokens(to: string, amount: number) {
@@ -203,6 +225,44 @@ export class EtherController {
         const receipt = await tx.wait();
         if (receipt.status === 0) throw new Error('Transaction failed');
         await this.updateBalance();
+      }
+    } catch (error: any) {
+      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
+      this.state.transactionError = error;
+    } finally {
+      this.state.txBeingSent = undefined;
+    }
+  }
+
+  async mintTokens(amount: number) {
+    try {
+      this.dismissTransactionError();
+
+      if (this.token && this.token.mint) {
+        const tx = await this.token.mint(toWei(amount).toString());
+        this.state.txBeingSent = tx.hash;
+        const receipt = await tx.wait();
+        if (receipt.status === 0) throw new Error('Transaction failed');
+        await this.updateBalanceOwner();
+      }
+    } catch (error: any) {
+      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;
+      this.state.transactionError = error;
+    } finally {
+      this.state.txBeingSent = undefined;
+    }
+  }
+
+  async burnTokens(amount: number) {
+    try {
+      this.dismissTransactionError();
+
+      if (this.token && this.token.burn) {
+        const tx = await this.token.burn(toWei(amount).toString());
+        this.state.txBeingSent = tx.hash;
+        const receipt = await tx.wait();
+        if (receipt.status === 0) throw new Error('Transaction failed');
+        await this.updateBalanceOwner();
       }
     } catch (error: any) {
       if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) return false;

@@ -24,6 +24,7 @@
       </v-tab>
 
       <v-tab
+        v-if="isOwner"
         :value="3"
       >
         <Icon
@@ -77,26 +78,29 @@
           </v-card-text>
         </v-card>
       </v-window-item>
-      <v-window-item :value="3">
+      <v-window-item
+        v-if="isOwner"
+        :value="3"
+      >
         <v-card min-height="300">
           <v-card-text>
             <TokenStatus
               :admin="true"
               :currency="{
                 ...currencyStore.currency,
-                total: 30
+                total: controller.state.balanceEthersSC || 0
               }"
               :token="{
                 ...currencyStore.token,
                 tokenAvailable: controller.state.balanceTokensSC || 0,
-                totalSupply: 10000
+                totalSupply: controller.state.totalSupply || 0
               }"
             />
             <AdminForm
               :token-symbol="currencyStore.token.symbol"
               :total-circulation="controller.state.balanceTokensSC || 0"
-              :mint-tokens="()=>{}"
-              :burn-tokens="()=>{}"
+              :mint-tokens="controller.mintTokens"
+              :burn-tokens="controller.burnTokens"
             />
           </v-card-text>
         </v-card>
@@ -109,17 +113,26 @@
 import { useCurrencyStore } from '../store/currency';
 import { Icon } from '@iconify/vue';
 
-defineProps({
+const props = defineProps({
   controller: {
     type: Object,
     required: true
+  },
+  isOwner: {
+    type: Boolean,
+    required: true,
+    default: false
   }
 });
 
 
-const tabs = ref(null) 
+const tabs = ref(1) 
 
 const currencyStore = useCurrencyStore();
 
+watch(() => props.isOwner, (newValue) => {
+  if(!newValue && tabs.value===3)
+    tabs.value = 1
+});
 
 </script>

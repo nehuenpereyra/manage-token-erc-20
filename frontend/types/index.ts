@@ -37,12 +37,18 @@ export interface StateDapp  {
     networkError: string | undefined,
     balanceEthers: number | undefined,
     balanceTokensSC: number | undefined,
+    isOwner: boolean | undefined,
+    balanceEthersSC: number | undefined,
+    totalSupply: number | undefined
 }
 
 type value = {value: BigNumber}
 export interface Token extends BaseContract{
     name?: () => string,
     symbol?: () => string,
+    owner?: () => string,
+    totalSupply?: () => string,
+    balanceEthersSC?: () => string,
     balanceOf?: (addr: string) => string,
     transfer?: (to: string, amount: BigNumber) => {
         hash: string,
@@ -57,5 +63,13 @@ export interface Token extends BaseContract{
         hash: string,
         wait: () => {status: number}
     },
+    mint?: (amount: string) => {
+        hash: string,
+        wait: () => {status: number}
+    }, 
+    burn?: (amount: string) => {
+        hash: string,
+        wait: () => {status: number}
+    }, 
 }
 

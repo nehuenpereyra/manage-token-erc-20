@@ -12,6 +12,7 @@
   />
   <TabBarMenu
     :controller="etherController"
+    :is-owner="etherController.state.isOwner"
   />
 </template>
   
