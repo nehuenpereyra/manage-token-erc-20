@@ -4,8 +4,8 @@ import { StateDapp, Token } from '../types';
 import { reactive } from 'vue';
 
 import { useCurrencyStore } from '../store/currency';
-import tokenArtifact from '@/contracts/token.json';
-import smartContractFile from '@/contracts/smart-contract.json';
+import tokenArtifact from './token.json';
+import smartContractFile from './smart-contract.json';
 
 const smartContract =  JSON.parse(JSON.stringify(smartContractFile))
 
