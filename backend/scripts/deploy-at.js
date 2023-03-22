@@ -22,7 +22,7 @@ async function main() {
   let initialSupply = '1000000000000000000000'; // 1000 * 1e18
 
   const Token = await ethers.getContractFactory("Token");
-  const token = await Token.deploy('AsianToken', 'AT', initialSupply);
+  const token = await Token.deploy('CGEASS', 'CGS', initialSupply);
 
   console.log("Token address:", token.address);
 

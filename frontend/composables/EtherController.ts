@@ -3,7 +3,7 @@ import { ethers, BigNumber } from 'ethers';
 import { StateDapp, Token } from '../types';
 import { reactive } from 'vue';
 
-
+import { useCurrencyStore } from '../store/currency';
 import tokenArtifact from '../contracts/token.json';
 import smartContractFile from '../contracts/smart-contract.json';
 
@@ -291,6 +291,8 @@ export class EtherController {
   }
 
   private async setLogo (){
+    const currencyStore = useCurrencyStore();
+    const urlIcon = location.protocol + '//' + location.host + currencyStore.token.img 
     if(this.state.balance === 0){
       const ethereum = window.ethereum
       try {
@@ -304,7 +306,7 @@ export class EtherController {
                 address: smartContract[ethereum.networkVersion as unknown as number],
                 symbol: this.state.tokenData?.symbol,
                 decimals: this.decimals,
-                image: 'https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.png?v=024' 
+                image: urlIcon
               }
             }
           });

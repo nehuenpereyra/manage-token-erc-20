@@ -4,28 +4,29 @@
       <v-col
         cols="12"
         sm="6"
+        class="d-flex align-center"
       >
-        <v-text-field
-          :value="account"
-          @keypress.prevent
-          hide-details
-          class="pr-3"
+        <v-tooltip
+          :text="account"
+          location="bottom"
+          color="#E5E5E5"
         >
-          <template #prepend>
-            <div class="pl-2 pl-sm-4">
-              <v-btn
-                :href="appStore.urlScan+account" 
-                target="_blank"
-              >
-                <Icon
-                  :width="30"
-                  icon="mdi:user"
-                  color="orange"
-                />
-              </v-btn>
-            </div>
+          <template #activator="{ props }">
+            <v-chip
+              v-bind="props"
+              :href="appStore.urlScan+account"
+              target="_blank"
+              class="mb-2"
+            >
+              <Icon
+                :width="30"
+                icon="mdi:user"
+                color="orange"
+              />
+              {{ account.slice(0,5) + '...' + account.slice(-3) }}
+            </v-chip>
           </template>
-        </v-text-field>
+        </v-tooltip>
       </v-col>
       <v-col
         cols="12"

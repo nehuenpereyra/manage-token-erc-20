@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   ssr: false,
   app: {
     head: {
-      title: 'Nuxt 3 Dapp',
+      title: 'Manage CGeass',
       htmlAttrs: {
         lang: 'en'
       },

@@ -35,7 +35,7 @@
     </v-tabs>
     <v-window v-model="tabs">
       <v-window-item :value="1">
-        <v-card min-height="300">
+        <v-card min-height="360">
           <v-card-text>
             <TokenStatus
               :currency="{
@@ -67,7 +67,7 @@
       </v-window-item>
       <v-window-item :value="2">
         <v-card
-          min-height="300"
+          min-height="360"
         >
           <v-card-text class="mt-8">
             <TransferForm
@@ -83,7 +83,7 @@
         v-if="isOwner"
         :value="3"
       >
-        <v-card min-height="300">
+        <v-card min-height="360">
           <v-card-text>
             <TokenStatus
               :admin="true"

@@ -3,14 +3,14 @@ export const useCurrencyStore = defineStore({
   state: () => {
     return {
       currency: {
-        name: 'Polygon',
-        symbol: 'MATIC',
-        icon: 'cryptocurrency-color:matic'
+        name: 'BNB',
+        symbol: 'BNB',
+        icon: 'cryptocurrency-color:bnb'
       },
       token: {
-        name: 'Asian Token',
-        symbol: 'AT',
-        img: 'https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.png?v=024'
+        name: 'CGS',
+        symbol: 'CGS',
+        img: '/img/CGeass.png'
       }
     }
   },
