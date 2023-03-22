@@ -124,7 +124,7 @@ const props = defineProps({
 const amount = ref('0')
 const purchaseMode = ref(true)
 const validForm = ref(false)
-const PRICE = 0.2
+const PRICE = 0.01
 
 const tokenAttrs = (token: Money) => {
   if(token.img)

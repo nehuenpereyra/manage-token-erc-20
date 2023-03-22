@@ -14,7 +14,7 @@ const fromWei = (num: string) => ethers.utils.formatEther(num)
 
 export class EtherController {
   private decimals = 18;
-  private price = 0.2;
+  private price = 0.01; // PRICE
   public state: StateDapp;
   private token: Token | undefined;
   private pollDataInterval: ReturnType<typeof setInterval> | undefined;
@@ -103,7 +103,8 @@ export class EtherController {
     this.startPollingData();
     if(this.state.isOwner)
       this.updateBalanceOwner()
-    this.setLogo();
+    if(this.state.balance !== undefined)
+      this.setLogo();
   }
 
   private async initializeContract() {
@@ -175,7 +176,7 @@ export class EtherController {
       Promise.all([this.token.totalSupply(), this.token.balanceEthersSC()])
         .then(responses => {
           this.state.totalSupply = parseFloat(fromWei(responses[0]))
-          this.state.balanceEthersSC = parseFloat(responses[1])
+          this.state.balanceEthersSC = parseFloat(fromWei(responses[1]))
         });
   }
 
@@ -190,7 +191,7 @@ export class EtherController {
         await this.updateBalance();
       }
     } catch (error: any) {
-      this.showTransactionError(error.reason);
+      this.showTransactionError(error.reason.slice(7));
     } finally {
       this.state.loadings.transfer = false;
     }
@@ -207,7 +208,7 @@ export class EtherController {
         await this.updateBalance();
       }
     } catch (error: any) {
-      this.showTransactionError(error.reason); // error.error.data.message
+      this.showTransactionError(error.reason.slice(7)); // error.error.data.message
     } finally {
       this.state.loadings.convert = false;
     }
@@ -223,7 +224,7 @@ export class EtherController {
         await this.updateBalance();
       }
     } catch (error: any) {
-      this.showTransactionError(error.reason);
+      this.showTransactionError(error.reason.slice(7));
     } finally {
       this.state.loadings.convert = false;
     }
@@ -239,7 +240,7 @@ export class EtherController {
         await this.updateBalanceOwner();
       }
     } catch (error: any) {
-      this.showTransactionError(error.reason);
+      this.showTransactionError(error.reason.slice(7));
     } finally {
       this.state.loadings.mint = false;
     }
@@ -255,7 +256,7 @@ export class EtherController {
         await this.updateBalanceOwner();
       }
     } catch (error: any) {
-      this.showTransactionError(error.reason);
+      this.showTransactionError(error.reason.slice(7));
     } finally {
       this.state.loadings.burn = false;
     }
@@ -284,9 +285,10 @@ export class EtherController {
     const chainId = `${window.ethereum.networkVersion}`
     if (smartContract[chainId]) return true;
     
-    const chainIds = Object.keys(smartContract)
+    //const chainIds = Object.keys(smartContract)
     
-    this.state.networkError = `Please connect Metamask to chainId: ${chainIds}`;
+    this.showTransactionError('The network is not compatible. Connect to the Binance Testnet Network (BNB).')
+    //this.state.networkError = `Please connect Metamask to chainId: ${chainIds}`;
     return false;
   }
 

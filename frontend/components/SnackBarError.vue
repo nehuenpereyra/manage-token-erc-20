@@ -10,7 +10,7 @@
       </div>
     &nbsp;
       <div class="text-white font-weight-medium">
-        {{ message.slice(7) }}
+        {{ message }}
       </div>
     </div>
   </v-snackbar>

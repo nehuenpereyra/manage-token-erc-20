@@ -4,7 +4,7 @@ const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 
 const toWei = (num) => ethers.utils.parseEther(num.toString());
 const fromWei = (num) => ethers.utils.formatEther(num);
-const PRICE = 0.2;
+const PRICE = 0.01;
 
 describe("Token contract", () => {
 
@@ -15,7 +15,7 @@ describe("Token contract", () => {
 
     const [owner, addr1, addr2] = await ethers.getSigners();
 
-    const token = await Token.deploy('AsianToken', 'AT', initialSupply);
+    const token = await Token.deploy('CGEASS', 'CGS', initialSupply);
 
     await token.deployed();
 
@@ -80,7 +80,7 @@ describe("Token contract", () => {
     it("Users should be able to return tokens", async () => {
       const { token, addr1 } = await loadFixture(deployTokenFixture);
 
-      const numTokens = 50
+      const numTokens = 500
       const buyPriceInWei = toWei(numTokens * PRICE);
       await token.connect(addr1).buyTokens(toWei(numTokens), { value: buyPriceInWei });
 
@@ -198,13 +198,13 @@ describe("Token contract", () => {
 
     it("Should show ethers balances in the contract correctly", async () => {
       const { token, owner } = await loadFixture(deployTokenFixture);
-      const numTokens = 50
+      const numTokens = 500
       const scBalanceInitialEther = await  token.connect(owner).balanceEthersSC();
       await buyTokens(token, owner, numTokens)
       const scBalanceFinalEther = await  token.connect(owner).balanceEthersSC();
       
       expect(scBalanceInitialEther).to.equal(0);
-      expect(scBalanceFinalEther).to.equal(numTokens*PRICE);
+      expect(parseFloat(fromWei(scBalanceFinalEther))).to.equal(numTokens*PRICE);
     });
 
     it("Should not allow one that is not Owner show the ether balance", async () => {

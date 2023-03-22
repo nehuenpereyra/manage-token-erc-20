@@ -72,8 +72,8 @@ const props = defineProps({
   }
 });
   
-const mintAmount = ref('0')
-const burnAmount = ref('0')
+const mintAmount = ref('')
+const burnAmount = ref('')
 const mintValid = ref(false)
 const burnValid = ref(false)
   

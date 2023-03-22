@@ -9,8 +9,6 @@
         <template v-if="!etherController.disabledEthereum()">
           <ConnectWallet 
             v-if="etherController.state.selectedAddress===undefined"
-            :network-error="etherController.state.networkError|| ''"
-            :dismiss="etherController.dismissNetworkError"
             :connect-wallet="etherController.connectWallet"
           />
           <HomeComponent

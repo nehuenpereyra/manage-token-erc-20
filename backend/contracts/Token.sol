@@ -22,7 +22,7 @@ contract Token is ERC20, Ownable, ReentrancyGuard {
 
     // Visualization of the Smart Contract Ethers Balance
     function balanceEthersSC() public view onlyOwner returns (uint256) {
-        return address(this).balance / 10 ** 18;
+        return address(this).balance;
     }
 
     // Generation of new ERC-20 tokens
@@ -62,6 +62,6 @@ contract Token is ERC20, Ownable, ReentrancyGuard {
 
     // ERC-20 tokens price
     function priceTokens(uint256 numTokens) internal pure returns (uint256) {
-        return numTokens * (0.2 ether);
+        return numTokens * (0.01 ether);
     }
 }
