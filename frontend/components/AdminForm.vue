@@ -100,15 +100,15 @@ const burnAmountRules = [
 ]
 
 const mintDisable = () => {
-  if(mintAmount.value === '' || parseInt(mintAmount.value) <= 0)
+  if(mintAmount.value === '' || parseFloat(mintAmount.value) <= 0)
     return true
   return false
 }
 
 
 const burnDisable = () => {
-  if(burnAmount.value === '' || parseInt(burnAmount.value) <= 0 || 
-  parseInt(burnAmount.value) > props.totalCirculation)
+  if(burnAmount.value === '' || parseFloat(burnAmount.value) <= 0 || 
+  parseFloat(burnAmount.value) > props.totalCirculation)
     return true
   return false
 }

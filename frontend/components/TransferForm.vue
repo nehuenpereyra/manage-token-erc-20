@@ -83,8 +83,8 @@ const recipientAddressRules = [
 ]
 
 function sendRules (){
-  const amountInt = parseInt(amount.value)
-  if(amountInt > props.totalAmount || amountInt <= 0 ||
+  const amountFloat = parseFloat(amount.value)
+  if(amountFloat > props.totalAmount || amountFloat <= 0 ||
     amount.value === '' || recipientAddress.value.length < 10)
     return true
   return false

@@ -313,3 +313,4 @@ dist
 #Hardhat files
 cache/
 artifacts/
+secret.json

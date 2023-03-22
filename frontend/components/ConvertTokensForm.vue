@@ -156,17 +156,20 @@ const amountRules = [
 ]
 
 const convertRules = () => {
-  const amountInt = parseInt(amount.value)
-  if(amountInt > sellToken.value.totalAmount || !validForm.value || 
-  amount.value === '' || amount.value === '0' )
+  const amountFloat = parseFloat(amount.value)
+  if(amountFloat > sellToken.value.totalAmount || !validForm.value || 
+  amount.value === '' || amountFloat === 0 )
     return true
   return false
 }
 
 const setMax = () => {
   if(purchaseMode.value){
-    if(sellToken.value.totalAmount >= props.maxCirculation*PRICE)
-      amount.value = (props.maxCirculation*PRICE).toString()
+    const sell = sellToken.value.totalAmount
+    if(sell / PRICE >= props.maxCirculation)
+      amount.value = (props.maxCirculation * PRICE).toString()
+    else
+      amount.value = sell.toString()  
   }
   else
     amount.value =  (props.token.totalAmount).toString()
