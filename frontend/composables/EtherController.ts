@@ -1,32 +1,42 @@
 import autoBind from 'auto-bind';
 import { ethers, BigNumber } from 'ethers';
 import { StateDapp, Token } from '../types';
-import { reactive } from 'vue';
 
 import { useCurrencyStore } from '../store/currency';
-import tokenArtifact from './token.json';
-import smartContractFile from './smart-contract.json';
+import tokenArtifact from '../contracts/token.json';
+import smartContractFile from '../contracts/smart-contract.json';
 
 const smartContract =  JSON.parse(JSON.stringify(smartContractFile))
-
+const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 const toWei = (num: number) => ethers.utils.parseEther(num.toString())
 const fromWei = (num: string) => ethers.utils.formatEther(num)
 
+type ReactiveFunc = ((state: StateDapp)=> StateDapp) | undefined 
+type PollDataInterval = ReturnType<typeof setInterval> | undefined
 export class EtherController {
   private decimals = 18;
   private price = 0.01; // PRICE
   public state: StateDapp;
   private token: Token | undefined;
-  private pollDataInterval: ReturnType<typeof setInterval> | undefined;
+  private pollDataInterval: PollDataInterval;
   private provider: any;
+  private reactiveFunct : ReactiveFunc;
 
-  constructor() {
+  constructor(reactiveFunct: ReactiveFunc) {
     autoBind(this)
-    this.state = reactive(this.initialState());
+    if(reactiveFunct){
+      this.reactiveFunct = reactiveFunct;
+      this.state = reactiveFunct(this.initialState());
+    }
+    else
+      this.state = this.initialState();
   }
 
   setInitialState() {
-    this.state = reactive(this.initialState());
+    if(this.reactiveFunct)
+      this.state = this.reactiveFunct(this.initialState());
+    else
+      this.state = this.initialState();
   }
 
   disabledEthereum() {
@@ -42,7 +52,6 @@ export class EtherController {
   }
 
   async connectWallet() {
-
     if (window.ethereum.request) {
       const [selectedAddress] = await window.ethereum.request({
         method: 'eth_requestAccounts'
@@ -54,7 +63,6 @@ export class EtherController {
       this.initialize(selectedAddress);
 
       window.ethereum.on('accountsChanged', ([newAddress]) => {
-        this.stopPollingData();
 
         if (newAddress === undefined) return this.setInitialState();
 
@@ -62,7 +70,6 @@ export class EtherController {
       });
 
       window.ethereum.on('chainChanged', () => {
-        this.stopPollingData();
         this.setInitialState();
       });
     }
@@ -94,17 +101,48 @@ export class EtherController {
     this.state.selectedAddress = userAddress;
     this.provider = new ethers.providers.Web3Provider(window.ethereum);
     await this.initializeContract();
+    
+    this.addSmartContractListener();
     Promise.all([
       this.getTokenData(),
       this.updateBalanceEthers(),
       this.updateBalanceTokensSC(),
       this.updateBalance()
     ])
-    this.startPollingData();
     if(this.state.isOwner)
-      this.updateBalanceOwner()
+      Promise.all([
+        this.updateTotalSupply(),
+        this.balanceEthersSC()
+      ])
+    
     if(this.state.balance !== undefined)
       this.setLogo();
+  }
+
+  private async addSmartContractListener () {
+    const userAddress = this.state.selectedAddress?.toLowerCase()
+    const contractAddress = smartContract[window.ethereum.networkVersion].toLowerCase()
+    this.token?.on('Transfer', (from, to) => {
+      if (from.toLowerCase() === userAddress || to.toLowerCase() === userAddress){
+        this.updateBalance()
+        this.updateBalanceTokensSC()
+      } 
+      // console.log(JSON.stringify({from, to, value, event}, null, 4)) 
+      if(this.state.isOwner)
+        if ((from.toLowerCase() === ADDRESS_ZERO && to.toLowerCase() === contractAddress) ||
+        (from.toLowerCase() === contractAddress && to.toLowerCase() === ADDRESS_ZERO)){
+          this.updateTotalSupply()
+          this.updateBalanceTokensSC()
+        }
+    })
+
+    this.token?.on('EtherTransfer', (from, to) => {
+      if (from.toLowerCase() === userAddress || to.toLowerCase() === userAddress)
+        this.updateBalanceEthers();
+      
+      if(this.state.isOwner)
+        this.balanceEthersSC()
+    })
   }
 
   private async initializeContract() {
@@ -119,21 +157,6 @@ export class EtherController {
       this.state.isOwner = this.state.selectedAddress.toLowerCase() === owner.toLowerCase();
     }
     
-  }
-
-  private startPollingData() {
-    this.pollDataInterval = setInterval(() => {
-      this.updateBalance()
-      this.updateBalanceEthers()
-      this.updateBalanceTokensSC()
-      if(this.state.isOwner)
-        this.updateBalanceOwner()
-    }, 5000);
-  }
-
-  stopPollingData() {
-    clearInterval(this.pollDataInterval);
-    this.pollDataInterval = undefined;
   }
 
   private async getTokenData() {
@@ -171,13 +194,18 @@ export class EtherController {
     }
   }
 
-  private async updateBalanceOwner() {
-    if (this.token && this.token.totalSupply && this.token.balanceEthersSC)
-      Promise.all([this.token.totalSupply(), this.token.balanceEthersSC()])
-        .then(responses => {
-          this.state.totalSupply = parseFloat(fromWei(responses[0]))
-          this.state.balanceEthersSC = parseFloat(fromWei(responses[1]))
-        });
+  private async balanceEthersSC() {
+    if (this.token && this.token.totalSupply && this.token.balanceEthersSC){
+      const balanceEthersSC = await this.token.balanceEthersSC()
+      this.state.balanceEthersSC = parseFloat(fromWei(balanceEthersSC))
+    }
+  }
+
+  private async updateTotalSupply(){
+    if (this.token && this.token.totalSupply){
+      const totalSupply = await this.token.totalSupply()
+      this.state.totalSupply = parseFloat(fromWei(totalSupply))
+    }
   }
 
   async transferTokens(to: string, amount: number) {
@@ -237,7 +265,6 @@ export class EtherController {
         this.state.loadings.mint = true;
         const receipt = await tx.wait();
         if (receipt.status === 0) throw new Error('Transaction failed');
-        await this.updateBalanceOwner();
       }
     } catch (error: any) {
       this.showTransactionError(error.reason.slice(7));
@@ -253,7 +280,6 @@ export class EtherController {
         this.state.loadings.burn = true;
         const receipt = await tx.wait();
         if (receipt.status === 0) throw new Error('Transaction failed');
-        await this.updateBalanceOwner();
       }
     } catch (error: any) {
       this.showTransactionError(error.reason.slice(7));

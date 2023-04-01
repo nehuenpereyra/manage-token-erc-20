@@ -58,11 +58,10 @@
 </template>
     
 <script setup lang="ts">
-import { onUnmounted } from 'vue'
 import { EtherController } from '~~/composables/EtherController'
+import { reactive } from 'vue';
 
-let etherController = new EtherController()
-onUnmounted(() => etherController.stopPollingData())
+const etherController = new EtherController(reactive)
 
 </script>
 

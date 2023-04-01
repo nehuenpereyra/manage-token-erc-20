@@ -7,6 +7,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Token is ERC20, Ownable, ReentrancyGuard {
+    
+    event EtherTransfer(address indexed from, address indexed to, uint256 value);
+
     constructor(
         string memory name,
         string memory symbol,
@@ -14,6 +17,12 @@ contract Token is ERC20, Ownable, ReentrancyGuard {
     ) ERC20(name, symbol) {
         _mint(address(this), initialSupply);
     }
+
+    // Receive function
+    receive() external payable {}
+
+    // Fallback function
+    fallback() external payable {}
 
     // Visualization of the Smart Contract Tokens Balance
     function balanceTokensSC() public view returns (uint256) {
@@ -44,6 +53,7 @@ contract Token is ERC20, Ownable, ReentrancyGuard {
         uint256 returnValue = msg.value - cost;
         payable(msg.sender).transfer(returnValue);
         _transfer(address(this), msg.sender, numTokens);
+        emit EtherTransfer(msg.sender, address(this), cost);
     }
 
     // Smart Contract ERC-20 tokens return
@@ -57,7 +67,9 @@ contract Token is ERC20, Ownable, ReentrancyGuard {
             "You don't have the tokens you want to return"
         );
         _transfer(msg.sender, address(this), numTokens);
-        payable(msg.sender).transfer(priceTokens(numTokens / (10 ** decimals())));
+        uint256 repay = priceTokens(numTokens / (10 ** decimals()));
+        payable(msg.sender).transfer(repay);
+        emit EtherTransfer(address(this), msg.sender, repay);
     }
 
     // ERC-20 tokens price
